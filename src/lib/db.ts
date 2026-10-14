@@ -18,13 +18,13 @@ import {
 import { addMinutesToTime } from './formatters';
 
 const STORAGE_KEYS = {
-  SERVICES: 'the_oasis_services_v1',
-  STAFF: 'the_oasis_staff_v1',
-  BUSINESS_HOURS: 'the_oasis_hours_v1',
-  HOLIDAYS: 'the_oasis_holidays_v1',
-  APPOINTMENTS: 'the_oasis_appointments_v1',
-  PAYMENTS: 'the_oasis_payments_v1',
-  AUDIT_LOGS: 'the_oasis_audit_logs_v1',
+  SERVICES: 'the_oasis_services_v2',
+  STAFF: 'the_oasis_staff_v2',
+  BUSINESS_HOURS: 'the_oasis_hours_v2',
+  HOLIDAYS: 'the_oasis_holidays_v2',
+  APPOINTMENTS: 'the_oasis_appointments_v2',
+  PAYMENTS: 'the_oasis_payments_v2',
+  AUDIT_LOGS: 'the_oasis_audit_logs_v2',
 };
 
 // Helper for local persistence
@@ -69,11 +69,11 @@ function getInitialAppointments(): Appointment[] {
       staffName: 'Ananya Rao',
       appointmentDate: today,
       startTime: '10:30',
-      endTime: '11:45',
-      totalDurationMinutes: 75,
-      totalPrice: 2800,
+      endTime: '11:40',
+      totalDurationMinutes: 70,
+      totalPrice: 2500,
       status: 'confirmed',
-      services: [INITIAL_SERVICES[12]], // O3+ Bridal Whitening Facial
+      services: [INITIAL_SERVICES.find((s) => s.id === 'w-pf-6') || INITIAL_SERVICES[0]], // Korean Glass Facial
       notes: 'Please ensure gentle exfoliation, client has sensitive skin.',
       createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
       paymentStatus: 'pending',
@@ -89,12 +89,12 @@ function getInitialAppointments(): Appointment[] {
       staffName: 'Ramesh Shetty',
       appointmentDate: today,
       startTime: '11:30',
-      endTime: '12:15',
-      totalDurationMinutes: 45,
-      totalPrice: 350,
+      endTime: '12:00',
+      totalDurationMinutes: 30,
+      totalPrice: 150,
       status: 'checked_in',
-      services: [INITIAL_SERVICES[0]], // Men's Signature Haircut & Beard Trim
-      notes: 'Prefers classic fade and sharp beard line.',
+      services: [INITIAL_SERVICES.find((s) => s.id === 'm-cut-2') || INITIAL_SERVICES[0]], // Men's Hair Cutting (Hair wash included)
+      notes: 'Prefers classic fade, hair wash included as per catalogue.',
       createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
       paymentStatus: 'completed',
       paymentMethod: 'upi',
@@ -110,11 +110,11 @@ function getInitialAppointments(): Appointment[] {
       staffName: 'Preethi D’Souza',
       appointmentDate: today,
       startTime: '14:00',
-      endTime: '15:10',
-      totalDurationMinutes: 70,
-      totalPrice: 1750,
+      endTime: '15:00',
+      totalDurationMinutes: 60,
+      totalPrice: 1500,
       status: 'pending',
-      services: [INITIAL_SERVICES[10], INITIAL_SERVICES[17]], // Argan Oil Spa + Eyebrow threading
+      services: [INITIAL_SERVICES.find((s) => s.id === 'w-pf-3') || INITIAL_SERVICES[0]], // Lotus Fruit Facial
       notes: 'Visiting Puttur for family festival.',
       createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
       paymentStatus: 'pending',
@@ -132,9 +132,9 @@ function getInitialAppointments(): Appointment[] {
       startTime: '16:00',
       endTime: '17:00',
       totalDurationMinutes: 60,
-      totalPrice: 2400,
+      totalPrice: 1500,
       status: 'confirmed',
-      services: [INITIAL_SERVICES[20]], // Swedish Relaxation Massage
+      services: [INITIAL_SERVICES.find((s) => s.id === 'm-spa-m1') || INITIAL_SERVICES[0]], // Swedish Massage
       notes: 'Relaxation session.',
       createdAt: new Date().toISOString(),
       paymentStatus: 'pending',
@@ -466,14 +466,43 @@ export const db = {
   createAppointment(
     data: Omit<Appointment, 'id' | 'bookingReference' | 'endTime' | 'createdAt'>
   ): { success: boolean; appointment?: Appointment; error?: string } {
-    // 1. Calculate end time
-    const endTime = addMinutesToTime(data.startTime, data.totalDurationMinutes);
+    // 1. Recalculate and verify prices and durations from authoritative stored records
+    const allDbServices = this.getServices();
+    let verifiedTotalPrice = 0;
+    let verifiedTotalDuration = 0;
+    const validatedServices: SalonService[] = [];
 
-    // 2. Strict server/db side validation
+    for (const selected of data.services) {
+      const dbService = allDbServices.find((s) => s.id === selected.id);
+      if (!dbService || !dbService.isActive) {
+        return { success: false, error: `Cannot book "${selected.name}": This service is unavailable.` };
+      }
+
+      // Reject services requiring confirmation
+      if (!dbService.priceConfirmed || dbService.requiresConfirmation) {
+        return {
+          success: false,
+          error: `Cannot book "${dbService.name}": This service price requires confirmation from the salon.`,
+        };
+      }
+
+      verifiedTotalPrice += dbService.price;
+      verifiedTotalDuration += dbService.durationMinutes;
+      validatedServices.push(dbService);
+    }
+
+    if (validatedServices.length === 0) {
+      return { success: false, error: 'Please select at least one valid service.' };
+    }
+
+    // 2. Calculate end time based on verified duration
+    const endTime = addMinutesToTime(data.startTime, verifiedTotalDuration);
+
+    // 3. Strict server/db side validation
     const validation = this.checkSlotConflict(
       data.appointmentDate,
       data.startTime,
-      data.totalDurationMinutes,
+      verifiedTotalDuration,
       data.staffId
     );
 
@@ -481,7 +510,7 @@ export const db = {
       return { success: false, error: validation.reason || 'Slot is no longer available.' };
     }
 
-    // 3. Assign staff if "any" was selected
+    // 4. Assign staff if "any" was selected
     let assignedStaffId = data.staffId;
     let assignedStaffName = data.staffName;
 
@@ -506,7 +535,7 @@ export const db = {
       }
     }
 
-    // 4. Generate unique Indian salon booking reference
+    // 5. Generate unique Indian salon booking reference
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const bookingReference = `OASIS-2026-${randomSuffix}`;
 
@@ -514,6 +543,9 @@ export const db = {
       ...data,
       id: `apt-${Date.now()}`,
       bookingReference,
+      services: validatedServices,
+      totalPrice: verifiedTotalPrice,
+      totalDurationMinutes: verifiedTotalDuration,
       staffId: assignedStaffId,
       staffName: assignedStaffName,
       endTime,
@@ -533,7 +565,7 @@ export const db = {
       'BOOK_APPOINTMENT',
       'appointment',
       newAppointment.id,
-      `Booked ref ${bookingReference} on ${data.appointmentDate} at ${data.startTime}`
+      `Booked ref ${bookingReference} on ${data.appointmentDate} at ${data.startTime} (Total: ₹${verifiedTotalPrice})`
     );
 
     return { success: true, appointment: newAppointment };

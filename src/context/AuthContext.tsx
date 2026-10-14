@@ -47,7 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : DEFAULT_USERS.customer;
+      const restored = stored ? JSON.parse(stored) as UserProfile : DEFAULT_USERS.customer;
+      return import.meta.env.DEV ? restored : { ...restored, role: 'customer' };
     } catch {
       return DEFAULT_USERS.customer;
     }
@@ -65,11 +66,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const cleanEmail = email.trim().toLowerCase();
     
     // Check if matching staff/admin credentials
-    if (cleanEmail === 'admin@oasis-salon.in' || role === 'admin') {
+    if (import.meta.env.DEV && (cleanEmail === 'admin@oasis-salon.in' || role === 'admin')) {
       setUser(DEFAULT_USERS.admin);
       return true;
     }
-    if (cleanEmail.includes('oasis-salon.in') || role === 'staff') {
+    if (import.meta.env.DEV && (cleanEmail.includes('oasis-salon.in') || role === 'staff')) {
       setUser(DEFAULT_USERS.staff);
       return true;
     }
@@ -111,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchRole = (newRole: UserRole) => {
+    if (!import.meta.env.DEV) return;
     setUser(DEFAULT_USERS[newRole]);
   };
 

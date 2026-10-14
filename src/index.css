@@ -19,6 +19,8 @@
     font-family: var(--font-sans);
     background-color: var(--color-oasis-ivory);
     color: var(--color-oasis-forest);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, .font-serif-luxury {
@@ -27,30 +29,23 @@
   }
 }
 
-/* Custom luxury scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #F5F1E8;
-}
-::-webkit-scrollbar-thumb {
-  background: #A8B7A0;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #26352A;
-}
+/* =====================================================================
+   LUXURY SCROLLBAR
+   ===================================================================== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #F5F1E8; }
+::-webkit-scrollbar-thumb { background: #A8B7A0; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #26352A; }
 
-/* Glassmorphism & subtle luxury styling */
+/* =====================================================================
+   GLASSMORPHISM
+   ===================================================================== */
 .glass-panel {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(216, 201, 167, 0.35);
 }
-
 .glass-panel-dark {
   background: rgba(26, 35, 28, 0.92);
   backdrop-filter: blur(16px);
@@ -58,12 +53,130 @@
   border: 1px solid rgba(216, 201, 167, 0.2);
 }
 
+/* =====================================================================
+   TYPOGRAPHY UTILITIES
+   ===================================================================== */
 .gold-gradient-text {
   background: linear-gradient(135deg, #26352A 0%, #76603F 50%, #D8C9A7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gold-border { border-color: rgba(216, 201, 167, 0.4); }
+
+/* =====================================================================
+   KEYFRAME ANIMATIONS
+   ===================================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.gold-border {
-  border-color: rgba(216, 201, 167, 0.4);
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216, 201, 167, 0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(216, 201, 167, 0); }
+}
+
+@keyframes shimmerAnim {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* =====================================================================
+   ANIMATION UTILITY CLASSES
+   ===================================================================== */
+.animate-fade-in    { animation: fadeIn 0.4s ease both; }
+.animate-slide-up   { animation: slideUp 0.45s ease both; }
+.animate-slide-down { animation: slideDown 0.3s ease both; }
+.animate-scale-in   { animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-pulse-gold { animation: pulseGold 2s ease-in-out infinite; }
+.animate-spin-slow  { animation: spinSlow 8s linear infinite; }
+.animate-float      { animation: floatY 3s ease-in-out infinite; }
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+
+/* =====================================================================
+   SHIMMER SKELETON
+   ===================================================================== */
+.shimmer {
+  background: linear-gradient(90deg, #E3E9DF 25%, #F5F1E8 50%, #E3E9DF 75%);
+  background-size: 200% auto;
+  animation: shimmerAnim 1.5s linear infinite;
+}
+
+/* =====================================================================
+   FOCUS RING (accessibility)
+   ===================================================================== */
+*:focus-visible {
+  outline: 2px solid #D8C9A7;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* =====================================================================
+   IMAGE TRANSITIONS
+   ===================================================================== */
+img { transition: opacity 0.3s ease; }
+
+/* =====================================================================
+   STATUS BADGE UTILITIES
+   ===================================================================== */
+.badge-confirmed   { background: #D1FAE5; color: #065F46; }
+.badge-pending     { background: #FEF3C7; color: #92400E; }
+.badge-cancelled   { background: #FEE2E2; color: #991B1B; }
+.badge-checked_in  { background: #DBEAFE; color: #1E40AF; }
+.badge-completed   { background: #E3E9DF; color: #26352A; }
+.badge-in_progress { background: #EDE9FE; color: #5B21B6; }
+.badge-no_show     { background: #F3F4F6; color: #374151; }
+
+/* =====================================================================
+   LUXURY CARD HOVER
+   ===================================================================== */
+.luxury-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.luxury-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(38, 53, 42, 0.12);
+}
+
+/* =====================================================================
+   ADMIN SIDEBAR SCROLL AREA
+   ===================================================================== */
+.admin-sidebar {
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #A8B7A0 #F5F1E8;
 }

@@ -19,14 +19,13 @@ export const GalleryPage: React.FC = () => {
       {/* Page Header */}
       <div className="text-center space-y-3 max-w-3xl mx-auto">
         <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
-          Visual Portfolio
+          Treatment Inspiration
         </span>
         <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#26352A]">
-          The Oasis Visual Journey
+          Hair, Beauty & Spa Inspiration
         </h1>
         <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-          Step into our serene, nature-inspired salon and spa sanctuary on the 2nd Floor of
-          Providence Plaza in Puttur.
+          These illustrative stock images show examples of hair, beauty and spa treatments. They are not photographs of this salon.
         </p>
       </div>
 
@@ -61,7 +60,7 @@ export const GalleryPage: React.FC = () => {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute top-3 left-3 bg-[#26352A]/85 text-[#D8C9A7] text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full backdrop-blur-xs">
-                {item.category}
+                Illustrative · {item.category}
               </div>
             </div>
 

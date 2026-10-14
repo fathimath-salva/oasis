@@ -161,7 +161,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           </button>
         </form>
 
-        {/* Quick Demo Switcher for Evaluator */}
+        {import.meta.env.DEV && <>
+        {/* Development-only demo accounts */}
         <div className="bg-[#F5F1E8] p-5 border-t border-[#D8C9A7]/40 space-y-2 text-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
             Instant Demo Account Sign-In (For Testing)
@@ -195,6 +196,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             </button>
           </div>
         </div>
+        </>}
       </div>
     </div>
   );

@@ -11,6 +11,21 @@ export function formatINR(amount: number): string {
   }).format(amount);
 }
 
+export function formatServicePrice(service: {
+  price: number;
+  displayPrice?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}): string {
+  if (service.displayPrice) {
+    return service.displayPrice;
+  }
+  if (service.minPrice !== undefined && service.maxPrice !== undefined) {
+    return `${formatINR(service.minPrice)}–${formatINR(service.maxPrice)}`;
+  }
+  return formatINR(service.price);
+}
+
 export function formatDuration(minutes: number): string {
   if (minutes < 60) {
     return `${minutes} mins`;

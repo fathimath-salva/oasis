@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
     { label: 'Home', view: 'home' },
     { label: "Men's Services", view: 'services', filter: 'men' },
     { label: "Women's Services", view: 'services', filter: 'women' },
-    { label: 'Spa & Body', view: 'services', filter: 'spa' },
+    { label: 'Spa & Body Treatments', view: 'services', filter: 'spa' },
     { label: 'All Services', view: 'services', filter: 'all' },
     { label: 'Gallery', view: 'gallery' },
     { label: 'About Us', view: 'about' },
@@ -114,7 +114,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center space-x-3">
-            {/* Quick Demo Role Switcher (for testing evaluator) */}
+            {import.meta.env.DEV && <>
+            {/* Development-only demo role switcher */}
             <div className="relative">
               <button
                 onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
@@ -179,6 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                 </div>
               )}
             </div>
+            </>}
 
             {/* My Appointments / Dashboards */}
             {role === 'customer' && (
@@ -288,7 +290,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
             ))}
           </div>
 
-          {/* Switch Role on Mobile */}
+          {import.meta.env.DEV && <>
+          {/* Development-only role switcher */}
           <div className="space-y-2 pt-2">
             <div className="text-[10px] tracking-wider uppercase font-bold text-gray-500">
               Active Role: {role}
@@ -332,6 +335,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
               </button>
             </div>
           </div>
+          </>}
         </div>
       )}
     </header>

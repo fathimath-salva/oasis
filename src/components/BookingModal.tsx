@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
 import { db } from '../lib/db';
-import { formatINR, formatDuration, formatTime12Hour, formatDateWithWeekday } from '../lib/formatters';
+import { formatINR, formatDuration, formatTime12Hour, formatDateWithWeekday, formatServicePrice } from '../lib/formatters';
 
 interface BookingModalProps {
   onNavigateToAppointments?: () => void;
@@ -53,7 +53,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
       if (genderFilter !== 'all' && s.gender !== genderFilter && s.gender !== 'unisex') return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        return s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q);
+        return s.name.toLowerCase().includes(q) || (s.description ?? '').toLowerCase().includes(q);
       }
       return true;
     });
@@ -175,11 +175,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                   return (
                     <div
                       key={service.id}
-                      onClick={() => toggleService(service)}
-                      className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
-                        isSelected
-                          ? 'border-[#26352A] bg-white ring-2 ring-[#26352A]/20 shadow-sm'
-                          : 'border-[#D8C9A7]/40 bg-white/70 hover:bg-white hover:border-[#26352A]/40'
+                      onClick={() => {
+                        if (service.priceConfirmed && !service.requiresConfirmation) {
+                          toggleService(service);
+                        }
+                      }}
+                      className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
+                        !service.priceConfirmed || service.requiresConfirmation
+                          ? 'opacity-60 cursor-not-allowed bg-gray-50 border-gray-200'
+                          : isSelected
+                          ? 'border-[#26352A] bg-white ring-2 ring-[#26352A]/20 shadow-sm cursor-pointer'
+                          : 'border-[#D8C9A7]/40 bg-white/70 hover:bg-white hover:border-[#26352A]/40 cursor-pointer'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -192,11 +198,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                             >
                               {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                             </span>
-                            <h4 className="text-xs font-semibold text-[#26352A]">{service.name}</h4>
+                            <div>
+                              <h4 className="text-xs font-semibold text-[#26352A]">{service.name}</h4>
+                              <div className="flex items-center space-x-1.5 mt-0.5">
+                                <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-[#E3E9DF] text-[#26352A]">
+                                  {service.gender === 'men' ? "Men's" : "Women's"}
+                                </span>
+                                {service.hairLength && (
+                                  <span className="text-[9px] uppercase font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200">
+                                    {service.hairLength.replace('_', ' ')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 pl-6">
-                            {service.description}
-                          </p>
+                          {service.description && (
+                            <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 pl-6">
+                              {service.description}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -206,14 +226,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                           <span>{formatDuration(service.durationMinutes)}</span>
                         </span>
                         <div className="flex items-center space-x-2">
-                          {!service.priceConfirmed && (
-                            <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">
-                              Estimated
+                          {!service.priceConfirmed || service.requiresConfirmation ? (
+                            <span className="text-[9px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
+                              Requires Confirmation
+                            </span>
+                          ) : (
+                            <span className="font-semibold text-sm text-[#26352A]">
+                              {formatServicePrice(service)}
                             </span>
                           )}
-                          <span className="font-semibold text-sm text-[#26352A]">
-                            {formatINR(service.price)}
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -434,9 +455,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                     <div key={s.id} className="flex justify-between items-center text-xs">
                       <div>
                         <span className="font-medium text-[#26352A]">{s.name}</span>
+                        {s.hairLength && (
+                          <span className="text-[9px] bg-[#E3E9DF] text-[#26352A] px-1.5 py-0.5 rounded ml-1.5 uppercase font-bold">
+                            {s.hairLength.replace('_', ' ')}
+                          </span>
+                        )}
                         <span className="text-gray-400 ml-2">({formatDuration(s.durationMinutes)})</span>
                       </div>
-                      <span className="font-semibold text-[#26352A]">{formatINR(s.price)}</span>
+                      <span className="font-semibold text-[#26352A]">{formatServicePrice(s)}</span>
                     </div>
                   ))}
                 </div>

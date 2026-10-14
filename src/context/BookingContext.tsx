@@ -98,12 +98,19 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const openBooking = (initialService?: SalonService) => {
     if (initialService) {
-      setSelectedServices([initialService]);
-      setStep(2); // Jump straight to date & staff selection
+      if (!initialService.priceConfirmed || initialService.requiresConfirmation) {
+        setSelectedServices([]);
+        setStep(1);
+        setError('This service price needs confirmation from the salon before it can be booked.');
+      } else {
+        setSelectedServices([initialService]);
+        setStep(2); // Jump straight to date & staff selection
+        setError(null);
+      }
     } else {
       setStep(1);
+      setError(null);
     }
-    setError(null);
     setIsOpen(true);
   };
 
@@ -112,6 +119,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const toggleService = (service: SalonService) => {
+    if (!service.priceConfirmed || service.requiresConfirmation) return;
     setSelectedServices((prev) => {
       const exists = prev.some((s) => s.id === service.id);
       if (exists) {

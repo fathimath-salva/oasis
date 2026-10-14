@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  Sparkles,
-  ShieldCheck,
-  Award,
-  HeartHandshake,
-} from 'lucide-react';
+import { Sparkles, ShieldCheck, Award, HeartHandshake } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
 
 export const AboutPage: React.FC = () => {
@@ -13,17 +8,15 @@ export const AboutPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
       {/* Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-[#26352A] text-white p-8 sm:p-16 flex flex-col justify-center items-center text-center space-y-4 shadow-xl">
+      <div className="relative overflow-hidden bg-[#343923] text-white p-8 sm:p-16 flex flex-col justify-center items-center text-center space-y-4">
         <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/10 text-[#D8C9A7] text-xs uppercase tracking-widest font-semibold border border-[#D8C9A7]/30">
-          Our Heritage & Ethos
+          A little time for yourself
         </div>
         <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight max-w-3xl">
-          Crafting Natural Luxury in the Heart of Puttur
+          Welcome to THE OASIS UNISEX SALON & SPA
         </h1>
         <p className="max-w-2xl text-xs sm:text-sm md:text-base text-[#E3E9DF]/80 leading-relaxed font-light">
-          THE OASIS was born from a singular vision: to create a tranquil sanctuary in Dakshina
-          Kannada where world-class hair artistry, clinical skin wellness, and deep holistic
-          relaxation unite seamlessly.
+          A place to take a little time for yourself. Explore hair, beauty and spa services in a comfortable setting, with a focus on personal care and helping you feel your best. We look forward to welcoming you.
         </p>
       </div>
 
@@ -37,15 +30,10 @@ export const AboutPage: React.FC = () => {
             More than a Salon — A Restorative Escape
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Perched on the 2nd Floor of Providence Plaza overlooking the bustling Yelmudi Bridge,
-            THE OASIS provides a peaceful contrast to the pace of daily life. Our interior palette of
-            muted sage green, warm ivory, and natural champagne gold reflects our commitment to
-            natural elegance and unhurried pampering.
+            Take a little time for yourself with hair, beauty and spa services in a comfortable setting.
           </p>
           <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Whether you are visiting for a precision fade, an intricate bridal glow facial, or a
-            rejuvenating warm oil head champi, our certified stylists and aestheticians take time to
-            understand your hair texture, skin tone, and wellness objectives.
+            Our team looks forward to welcoming you to the salon in Puttur.
           </p>
 
           <div className="pt-2">
@@ -77,35 +65,33 @@ export const AboutPage: React.FC = () => {
       <div className="bg-[#E3E9DF]/60 rounded-3xl p-8 sm:p-12 border border-[#D8C9A7]/40 space-y-8">
         <div className="text-center space-y-2 max-w-xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
-            Guaranteed Standards
+            A warm welcome
           </span>
           <h2 className="font-serif text-3xl font-bold text-[#26352A]">
-            The 4 Pillars of The Oasis
+            Hair, beauty and spa
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-2xl p-5 shadow-xs border border-gray-100 space-y-3">
             <ShieldCheck className="w-8 h-8 text-[#26352A]" />
-            <h3 className="font-serif text-base font-bold text-[#26352A]">1. Clinical Hygiene</h3>
+            <h3 className="font-serif text-base font-bold text-[#26352A]">1. Hair services</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Medical-grade autoclave sterilisation for every metallic instrument, fresh disposable
-              capes, and rigorous workstation disinfections.
+              Explore haircuts, styling, colour and care options in the service catalogue.
             </p>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-xs border border-gray-100 space-y-3">
             <Award className="w-8 h-8 text-[#26352A]" />
-            <h3 className="font-serif text-base font-bold text-[#26352A]">2. Certified Stylists</h3>
+            <h3 className="font-serif text-base font-bold text-[#26352A]">2. Beauty services</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Our specialists undergo regular training in modern European cutting, balayage
-              techniques, and clinical skin peels.
+              Browse facial, threading, waxing, manicure and pedicure services.
             </p>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-xs border border-gray-100 space-y-3">
             <Sparkles className="w-8 h-8 text-[#26352A]" />
-            <h3 className="font-serif text-base font-bold text-[#26352A]">3. Genuine Formulations</h3>
+            <h3 className="font-serif text-base font-bold text-[#26352A]">3. Spa services</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
               We exclusively use authentic global formulations from L’Oréal Professionnel, Casmara
               Spain, and organic essential oils.
@@ -114,10 +100,9 @@ export const AboutPage: React.FC = () => {
 
           <div className="bg-white rounded-2xl p-5 shadow-xs border border-gray-100 space-y-3">
             <HeartHandshake className="w-8 h-8 text-[#26352A]" />
-            <h3 className="font-serif text-base font-bold text-[#26352A]">4. Honest Pricing</h3>
+            <h3 className="font-serif text-base font-bold text-[#26352A]">4. Service details</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Transparent rate card in Indian Rupees without surprise add-on taxes or aggressive
-              product pushing.
+              Check service options and confirmed catalogue prices before booking.
             </p>
           </div>
         </div>

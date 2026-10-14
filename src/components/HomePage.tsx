@@ -19,16 +19,29 @@ interface HomePageProps {
   onNavigate: (view: string, filter?: string) => void;
 }
 
+const FEATURED_IMAGES: Record<string, string> = {
+  'w-cut-4': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+  'm-spa-m1': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80',
+  'w-spa-4': 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80',
+  'w-pf-6': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
+};
+
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { openBooking } = useBooking();
 
-  // Featured 4 curated services
+  // Featured 4 curated services — selected by stable ID
   const featuredServices = [
-    INITIAL_SERVICES[0], // Men's Signature Cut & Beard Trim
-    INITIAL_SERVICES[1], // Women's Advanced Haircut & Style
-    INITIAL_SERVICES[13], // Casmara 24K Gold Facial
-    INITIAL_SERVICES[10], // Moroccan Argan Oil Deep Conditioning Spa
-  ];
+    'w-cut-4',    // Women's Advance Hair Cut (with Wash / Blow-Dry)
+    'm-spa-m1',   // Men's Swedish Massage
+    'w-spa-4',    // Women's Keratin Spa
+    'w-pf-6',     // Women's Korean Glass Facial
+  ]
+    .map((id) => {
+      const svc = INITIAL_SERVICES.find((s) => s.id === id);
+      if (!svc) return null;
+      return { ...svc, imageUrl: svc.imageUrl || FEATURED_IMAGES[id] };
+    })
+    .filter(Boolean) as typeof INITIAL_SERVICES;
 
   return (
     <div className="space-y-20 pb-20">
@@ -125,7 +138,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           >
             <img
               src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80"
-              alt="Men's Salon Services in Puttur"
+              alt="Illustrative image for men's salon services"
               className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-75 transition-all duration-700"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#19231C] via-[#19231C]/60 to-transparent" />
@@ -151,7 +164,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           >
             <img
               src="https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=800&q=80"
-              alt="Women's Hair and Beauty in Puttur"
+              alt="Illustrative image for women's hair and beauty services"
               className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-75 transition-all duration-700"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#19231C] via-[#19231C]/60 to-transparent" />

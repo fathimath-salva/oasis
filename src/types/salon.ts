@@ -11,28 +11,42 @@ export interface UserProfile {
 
 export type GenderClassification = 'men' | 'women' | 'unisex';
 
+export type HairLengthVariation = 'short' | 'medium' | 'long' | 'extra_long';
+
 export type ServiceCategory =
-  | 'Haircutting and hairstyling'
-  | 'Hair wash and blow-dry'
-  | 'Hair colouring and highlights'
-  | 'Smoothening and straightening'
-  | 'Keratin treatments'
-  | 'Hair spa and head massage'
-  | 'Classic and premium facials'
-  | 'Clean-up and skin treatments'
-  | 'Waxing and threading'
-  | 'Manicure and pedicure'
-  | 'Body spa and massage';
+  | 'Hair Cutting'
+  | 'Hair Wash'
+  | 'Blow Dry'
+  | 'Smoothening / Straightening'
+  | 'Keratin Treatment'
+  | 'Classic Facial'
+  | 'Premium Facial'
+  | 'Clean-Up'
+  | 'Bleach & Add-On'
+  | 'Hair Colour'
+  | 'Manicure'
+  | 'Pedicure'
+  | 'Hair Spa'
+  | 'Waxing'
+  | 'Brazilian Waxing'
+  | 'Threading'
+  | 'Body Spa & Massage';
 
 export interface SalonService {
   id: string;
   name: string;
   category: ServiceCategory;
   gender: GenderClassification;
-  description: string;
-  price: number; // in INR
-  priceConfirmed: boolean; // if false, flagged for admin review
+  description?: string;
+  price: number; // in INR (base or exact price)
+  minPrice?: number; // for approved price ranges (e.g. ₹3,000)
+  maxPrice?: number; // for approved price ranges (e.g. ₹5,000)
+  displayPrice?: string; // e.g. "₹3,000–₹5,000" or "₹10,000+"
+  hairLength?: HairLengthVariation;
   durationMinutes: number;
+  priceConfirmed: boolean; // confirmed by official catalogue
+  requiresConfirmation?: boolean; // if true, flagged for confirmation prior to booking
+  sourceNote?: string; // notes from catalogue
   isActive: boolean;
   imageUrl?: string;
   createdAt?: string;
