@@ -1,23 +1,56 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from './database.types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
-export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
-  supabaseAnonKey &&
-  supabaseUrl !== 'https://your-project-id.supabase.co' &&
-  !supabaseUrl.includes('your-project-id')
-);
+const validateConfiguration = (): string | null => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable account and database features.';
+  }
+  try {
+    const parsed = new URL(supabaseUrl);
+    const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+    if ((parsed.protocol !== 'https:' && !(isLocal && parsed.protocol === 'http:')) || !parsed.hostname) {
+      return 'Supabase URL must use HTTPS (HTTP is allowed for localhost development).';
+    }
+  } catch {
+    return 'VITE_SUPABASE_URL is not a valid URL.';
+  }
+  if (/your-project-id|mock-oasis|mock-anon-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)) {
+    return 'Supabase configuration still contains a placeholder value.';
+  }
+  if (supabaseAnonKey.startsWith('sb_secret_')) {
+    return 'A Supabase secret key cannot be used in browser configuration. Use the public publishable/anon key.';
+  }
+  if (supabaseAnonKey.startsWith('eyJ')) {
+    try {
+      const payload = supabaseAnonKey.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded: unknown = payload ? JSON.parse(atob(payload)) : null;
+      if (typeof decoded === 'object' && decoded !== null && 'role' in decoded && decoded.role !== 'anon') {
+        return 'The browser key is not an anon key. Use the public publishable/anon key.';
+      }
+    } catch {
+      return 'VITE_SUPABASE_ANON_KEY is not a valid public key.';
+    }
+  } else if (!supabaseAnonKey.startsWith('sb_publishable_')) {
+    return 'VITE_SUPABASE_ANON_KEY must be a public publishable/anon key.';
+  }
+  return null;
+};
 
-// Fallback dummy client if credentials aren't provided yet so app doesn't crash on import
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : createClient('https://mock-oasis.supabase.co', 'mock-anon-key');
+export const supabaseConfigurationError = validateConfiguration();
+export const isSupabaseConfigured = supabaseConfigurationError === null;
 
-if (!isSupabaseConfigured) {
-  console.info(
-    '%c[THE OASIS] Running in persistent local database mode. Supabase credentials can be added to .env anytime for cloud sync.',
-    'color: #A8B7A0; font-weight: bold; background: #26352A; padding: 4px 8px; border-radius: 4px;'
-  );
-}
+// Configuration is optional at build time so the existing localStorage-backed
+// public site can still build and run. No fake client or credentials are used.
+export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
+  ? createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    })
+  : null;
+
+export const getSupabaseClient = (): SupabaseClient<Database> => {
+  if (!supabase) throw new Error(supabaseConfigurationError ?? 'Supabase client is unavailable.');
+  return supabase;
+};

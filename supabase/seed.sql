@@ -41,9 +41,11 @@ INSERT INTO services (id, name, category, gender, description, price, price_conf
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Staff Members
+-- This legacy seed intentionally leaves contact values blank. Staff contact
+-- data belongs in staff_private under the current admin-only RLS policy.
 INSERT INTO staff (id, name, title, phone, email, specialties, is_active, rating, working_days, start_time, end_time) VALUES
-('22222222-0000-0000-0000-000000000001', 'Ramesh Shetty', 'Senior Hair Stylist & Barber', '9151550077', 'ramesh@oasis-salon.in', ARRAY['Haircutting and hairstyling', 'Hair wash and blow-dry', 'Hair spa and head massage', 'Keratin treatments'], true, 4.90, '{0,1,2,4,5,6}', '09:00:00', '20:30:00'),
-('22222222-0000-0000-0000-000000000002', 'Ananya Rao', 'Master Aesthetician & Skin Care Specialist', '7760451767', 'ananya@oasis-salon.in', ARRAY['Classic and premium facials', 'Clean-up and skin treatments', 'Waxing and threading', 'Manicure and pedicure'], true, 4.95, '{0,1,2,3,5,6}', '09:30:00', '20:30:00'),
-('22222222-0000-0000-0000-000000000003', 'Mohammed Irfan', 'Senior Hair Colourist & Texture Artist', '9151550077', 'irfan@oasis-salon.in', ARRAY['Hair colouring and highlights', 'Smoothening and straightening', 'Keratin treatments'], true, 4.88, '{1,2,3,4,5,6}', '10:00:00', '20:30:00'),
-('22222222-0000-0000-0000-000000000004', 'Preethi D’Souza', 'Certified Spa Therapist & Wellness Specialist', '7760451767', 'preethi@oasis-salon.in', ARRAY['Body spa and massage', 'Hair spa and head massage', 'Manicure and pedicure'], true, 4.92, '{0,1,3,4,5,6}', '09:00:00', '19:30:00')
+('22222222-0000-0000-0000-000000000001', 'Ramesh Shetty', 'Senior Hair Stylist & Barber', '', '', ARRAY['Haircutting and hairstyling', 'Hair wash and blow-dry', 'Hair spa and head massage', 'Keratin treatments'], true, 4.90, '{0,1,2,4,5,6}', '09:00:00', '20:30:00'),
+('22222222-0000-0000-0000-000000000002', 'Ananya Rao', 'Master Aesthetician & Skin Care Specialist', '', '', ARRAY['Classic and premium facials', 'Clean-up and skin treatments', 'Waxing and threading', 'Manicure and pedicure'], true, 4.95, '{0,1,2,3,5,6}', '09:30:00', '20:30:00'),
+('22222222-0000-0000-0000-000000000003', 'Mohammed Irfan', 'Senior Hair Colourist & Texture Artist', '', '', ARRAY['Hair colouring and highlights', 'Smoothening and straightening', 'Keratin treatments'], true, 4.88, '{1,2,3,4,5,6}', '10:00:00', '20:30:00'),
+('22222222-0000-0000-0000-000000000004', 'Preethi D’Souza', 'Certified Spa Therapist & Wellness Specialist', '', '', ARRAY['Body spa and massage', 'Hair spa and head massage', 'Manicure and pedicure'], true, 4.92, '{0,1,3,4,5,6}', '09:00:00', '19:30:00')
 ON CONFLICT (id) DO NOTHING;

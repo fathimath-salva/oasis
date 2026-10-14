@@ -1,0 +1,5 @@
+project_id = "the-oasis-local"
+
+[db.seed]
+enabled = false
+sql_paths = []

@@ -751,7 +751,8 @@ export const AdminDashboard: React.FC = () => {
                   </div>
 
                   <p className="text-gray-600">
-                    Phone: <strong>{stf.phone}</strong> • Shift: <strong>{stf.startTime} – {stf.endTime}</strong>
+                    Private contact details are unavailable until this staff record is securely linked to Supabase.
+                    {' '}• Shift: <strong>{stf.startTime} – {stf.endTime}</strong>
                   </p>
 
                   <div className="pt-2 flex flex-wrap gap-1">

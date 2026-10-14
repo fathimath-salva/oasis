@@ -27,6 +27,8 @@ const STORAGE_KEYS = {
   AUDIT_LOGS: 'the_oasis_audit_logs_v2',
 };
 
+type StoredStaffRecord = StaffMember & { phone?: unknown; email?: unknown };
+
 // Helper for local persistence
 function getStorage<T>(key: string, defaultValue: T): T {
   try {
@@ -225,7 +227,21 @@ export const db = {
 
   // Staff
   getStaff(): StaffMember[] {
-    return getStorage<StaffMember[]>(STORAGE_KEYS.STAFF, INITIAL_STAFF);
+    let hadLegacyContacts = false;
+    const staff = getStorage<StoredStaffRecord[]>(STORAGE_KEYS.STAFF, INITIAL_STAFF).map((record) => {
+      const publicRecord = { ...record };
+      if (Object.prototype.hasOwnProperty.call(publicRecord, 'phone')) {
+        delete publicRecord.phone;
+        hadLegacyContacts = true;
+      }
+      if (Object.prototype.hasOwnProperty.call(publicRecord, 'email')) {
+        delete publicRecord.email;
+        hadLegacyContacts = true;
+      }
+      return publicRecord;
+    });
+    if (hadLegacyContacts) setStorage(STORAGE_KEYS.STAFF, staff);
+    return staff;
   },
 
   getStaffById(id: string): StaffMember | undefined {

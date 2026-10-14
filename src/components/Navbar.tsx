@@ -120,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                   </>}
                   {user && isRoleVerified && role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Dashboard</button>}
                   {user && isRoleVerified && role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Dashboard</button>}
-                  {user && <button onClick={() => { logout(); navigate('home'); }} className="mt-1 flex w-full items-center gap-2 border-t border-[#53583A]/15 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]"><LogOut className="h-3.5 w-3.5" />Sign Out</button>}
+                  {user && <button onClick={() => { void logout().then((result) => { if (!result.error) navigate('home'); }); }} className="mt-1 flex w-full items-center gap-2 border-t border-[#53583A]/15 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]"><LogOut className="h-3.5 w-3.5" />Sign Out</button>}
                 </div>}
               </div>
               <button onClick={() => openBooking()} className="whitespace-nowrap bg-[#53583A] px-4 py-2.5 text-sm text-white transition-colors hover:bg-[#343923]">Book Appointment</button>
@@ -160,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
               </>}
               {user && isRoleVerified && role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Dashboard</button>}
               {user && isRoleVerified && role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Dashboard</button>}
-              {user && <button onClick={() => { logout(); navigate('home'); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign Out</button>}
+              {user && <button onClick={() => { void logout().then((result) => { if (!result.error) navigate('home'); }); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign Out</button>}
             </div>}
           </div>
         </div>}      </header>

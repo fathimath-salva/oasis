@@ -16,7 +16,7 @@ import { BookingModal } from './components/BookingModal';
 import { AuthModal } from './components/AuthModal';
 
 const MainApp: React.FC = () => {
-  const { user, role, isRoleVerified } = useAuth();
+  const { user, role, isRoleVerified, isLoading: authLoading, authError } = useAuth();
   const { openBooking } = useBooking();
 
   const [currentView, setCurrentView] = useState<string>('home');
@@ -43,6 +43,8 @@ const MainApp: React.FC = () => {
 
       {/* Main Page Routing */}
       <main className="flex-1">
+        {authLoading && <p className="mx-auto max-w-7xl px-4 pt-3 text-sm text-[#53583A]" role="status">Checking your account…</p>}
+        {authError && <p className="mx-auto max-w-7xl px-4 pt-3 text-sm text-red-800" role="alert">{authError}</p>}
         {currentView === 'home' && <HomePage onNavigate={handleNavigate} />}
 
         {currentView === 'services' && <ServicesPage initialFilter={serviceFilter} />}

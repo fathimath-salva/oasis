@@ -56,8 +56,6 @@ export interface StaffMember {
   id: string;
   name: string;
   title: string;
-  phone: string;
-  email: string;
   specialties: ServiceCategory[];
   isActive: boolean;
   avatarUrl?: string;

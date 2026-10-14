@@ -1506,8 +1506,6 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-1',
     name: 'Ramesh Shetty',
     title: 'Hair Stylist & Barber',
-    phone: '9151550077',
-    email: 'ramesh@oasis-salon.in',
     specialties: [
       'Hair Cutting',
       'Hair Wash',
@@ -1526,8 +1524,6 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-2',
     name: 'Ananya Rao',
     title: 'Skin Care Specialist',
-    phone: '7760451767',
-    email: 'ananya@oasis-salon.in',
     specialties: [
       'Classic Facial',
       'Premium Facial',
@@ -1549,8 +1545,6 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-3',
     name: 'Mohammed Irfan',
     title: 'Hair Colourist',
-    phone: '9151550077',
-    email: 'irfan@oasis-salon.in',
     specialties: [
       'Hair Colour',
       'Smoothening / Straightening',
@@ -1568,8 +1562,6 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-4',
     name: 'Preethi Dâ€™Souza',
     title: 'Spa Therapist',
-    phone: '7760451767',
-    email: 'preethi@oasis-salon.in',
     specialties: [
       'Body Spa & Massage',
       'Hair Spa',
