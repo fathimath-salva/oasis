@@ -207,7 +207,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                                 <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-[#E3E9DF] text-[#26352A]">
                                   {service.gender === 'men' ? "Men's" : "Women's"}
                                 </span>
-                                {service.hairLength && (
+                                {service.gender !== 'men' && service.hairLength && (
                                   <span className="text-[9px] uppercase font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200">
                                     {service.hairLength.replace('_', ' ')}
                                   </span>
@@ -458,7 +458,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                     <div key={s.id} className="flex justify-between items-center text-xs">
                       <div>
                         <span className="font-medium text-[#26352A]">{s.name}</span>
-                        {s.hairLength && (
+                        {s.gender !== 'men' && s.hairLength && (
                           <span className="text-[9px] bg-[#E3E9DF] text-[#26352A] px-1.5 py-0.5 rounded ml-1.5 uppercase font-bold">
                             {s.hairLength.replace('_', ' ')}
                           </span>

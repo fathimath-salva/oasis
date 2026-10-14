@@ -11,9 +11,10 @@
 ## Current Implementation Notes
 
 - `src/lib/db.ts` currently stores services, appointments, schedules, payments and audit events in this browser's `localStorage`. The Supabase schema and client exist, but the application data layer does not yet read or write those tables. Adding Supabase credentials alone does not enable shared persistence.
-- Supabase URL and public key were not configured in `.env` at the time of this review.
-- The role switcher and sample accounts are development-only. The current sign-in form is a prototype and is not production authentication. Configure Supabase Auth and enforce roles with database policies before using staff or administrator access in production.
-- Production customer login and registration are intentionally disabled until a real authentication provider is configured. The booking flow preserves selections but blocks confirmation for signed-out visitors.
+- Supabase URL and public key are not configured in `.env`, so sign-in, registration, and verified dashboard access are unavailable in this checkout.
+- The auth UI is wired to Supabase email/password auth and reads each signed-in user's role from `profiles`. New accounts receive the `customer` role from the signup trigger in `supabase/schema.sql`; staff/admin roles must be assigned to existing profiles by a trusted administrator.
+- The schema includes role protections and RLS policies, but it must be applied to the Supabase project before those controls take effect. The app's `src/lib/db.ts` still stores appointments and dashboard data in browser `localStorage`; those operations are not backed by Supabase or protected by its RLS policies.
+- Public pages remain available without an account. Appointment confirmation requires a signed-in customer; without Supabase credentials, the sign-in form explains why it cannot proceed.
 - `Women-oasis.pdf` and `Oasis-men's Catalog.pdf` were not present in the inspected workspace. The catalogue values already in `salonData.ts` were preserved, but their source prices and listed durations could not be independently verified during this work.
 - `.env` contains salon email and enquiry endpoint configuration, but a test submission returned HTTP 404. Email delivery is not verified; check the server endpoint path and provider setup. Keep provider credentials on the server.
 - Google Maps directions use the supplied salon address as a search destination. The exact business pin has not been verified.
@@ -22,11 +23,11 @@ These notes describe the current prototype; they are not a claim that production
 
 Salon website and local management prototype built with **React 19 + TypeScript + Vite**, featuring:
 
-- **Premium customer website** â€” service catalogue, appointment booking, gallery, about & contact
+- **Customer website** â€” service catalogue, appointment booking, account details, about & contact
 - **Admin dashboard** â€” appointments, services, staff, payments, business hours, reports & audit log
 - **Staff dashboard** â€” daily schedule, queue management, real-time appointment status
 - **Booking engine** â€” double-booking prevention, slot availability, multi-service selection
-- **Role dashboards** â€” customer / staff / admin views, with development-only demo controls
+- **Role dashboards** â€” customer / staff / admin pages retained; staff/admin access requires verified authentication
 - **Local prototype storage** â€” `localStorage` persistence via `db.ts`; Supabase CRUD is not connected
 
 ---
@@ -64,15 +65,9 @@ The app runs at **http://localhost:5173** (or next available port).
 
 ---
 
-## Development Demo Accounts
+## Authentication Status
 
-| Role     | Name                | Email                    |
-|----------|---------------------|--------------------------|
-| Admin    | Salon Director      | admin@oasis-salon.in     |
-| Staff    | Ramesh Shetty       | ramesh@oasis-salon.in    |
-| Customer | Kavya Rai           | kavya.rai@example.com    |
-
-> In development, open the Account menu to switch demo roles. These sample accounts are not secure authentication and must not be used in production.
+Sign-in and registration use Supabase Auth when `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are configured. Dashboard links and routes require a matching role read from the signed-in user's `profiles` row. No staff/admin credentials are built into the app; an administrator must assign those roles in the database. Until the schema is deployed, Supabase is configured, and account roles exist, staff/admin dashboards cannot be accessed. Dashboard and appointment data operations still use browser `localStorage`, so role-gated screens are not yet a secure server-backed management system.
 
 ---
 
@@ -116,7 +111,7 @@ src/
 â”‚   â”œâ”€â”€ ServicesPage.tsx      # Service catalogue with filters
 â”‚   â”œâ”€â”€ MyAppointmentsPage.tsx # Customer appointment management
 â”‚   â”œâ”€â”€ HomePage.tsx          # Landing page
-â”‚   â”œâ”€â”€ GalleryPage.tsx       # Photo gallery
+â”‚   â”œâ”€â”€ MyAccountPage.tsx     # Customer account details
 â”‚   â”œâ”€â”€ AboutPage.tsx         # About the salon
 â”‚   â”œâ”€â”€ ContactPage.tsx       # Contact & map
 â”‚   â”œâ”€â”€ Footer.tsx            # Global footer
@@ -130,7 +125,7 @@ src/
 â”‚   â”œâ”€â”€ formatters.ts          # INR, date, time formatters
 â”‚   â””â”€â”€ supabase.ts            # Supabase client (cloud)
 â”œâ”€â”€ constants/
-â”‚   â””â”€â”€ salonData.ts           # All services, staff, hours, reviews, gallery
+â”‚   â””â”€â”€ salonData.ts           # Services, staff, business hours and reviews
 â””â”€â”€ types/
     â””â”€â”€ salon.ts               # TypeScript interfaces
 supabase/

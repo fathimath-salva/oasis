@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import {
   X,
-  User,
-  Shield,
-  Briefcase,
   Sparkles,
   AlertCircle,
 } from 'lucide-react';
@@ -12,53 +9,61 @@ import type { UserRole } from '../types/salon';
 
 interface AuthModalProps {
   isOpen: boolean;
+  initialMode?: 'login' | 'register';
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (role: UserRole) => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const { login, register, switchRole } = useAuth();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'login', onClose, onSuccess }) => {
+  const { login, register } = useAuth();
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
 
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
+    setIsSubmitting(true);
 
-    if (!import.meta.env.DEV) {
-      setError('Customer authentication is not configured yet. Please call the salon to arrange an appointment.');
-      return;
-    }
-
-    if (mode === 'login') {
-      if (!email.trim()) {
-        setError('Please enter your email or staff username.');
+    try {
+      if (!email.trim() || !password) {
+        setError('Please enter your email address and password.');
         return;
       }
-      login(email);
-      onClose();
-      if (onSuccess) onSuccess();
-    } else {
-      if (!fullName.trim() || !phone.trim() || !email.trim()) {
-        setError('Please fill in all registration fields.');
+      if (mode === 'register' && (!fullName.trim() || !phone.trim())) {
+        setError('Please fill in your name and phone number.');
         return;
       }
-      register(fullName, email, phone);
-      onClose();
-      if (onSuccess) onSuccess();
-    }
-  };
+      if (mode === 'register' && password.length < 8) {
+        setError('Choose a password with at least 8 characters.');
+        return;
+      }
 
-  const handleQuickDemo = (role: UserRole) => {
-    switchRole(role);
-    onClose();
-    if (onSuccess) onSuccess();
+      const result = mode === 'login'
+        ? await login(email, password)
+        : await register(fullName, email, phone, password);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.needsEmailConfirmation) {
+        setMessage('Check your email to confirm your account, then sign in.');
+      } else {
+        onClose();
+        if (result.role) onSuccess?.(result.role);
+      }
+    } catch {
+      setError('We could not complete sign-in. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,7 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             {mode === 'login' ? 'Welcome Back' : 'Create Customer Account'}
           </h3>
           <p className="text-xs text-[#E3E9DF]/80 mt-1">
-            Customer sign-in is required before confirming an appointment.
+            Sign in with your salon account. Customers must sign in before confirming an appointment.
           </p>
         </div>
 
@@ -118,13 +123,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               <span>{error}</span>
             </div>
           )}
+          {message && <p className="rounded-xl bg-emerald-50 p-3 text-emerald-800">{message}</p>}
 
           {mode === 'register' && (
             <div>
               <label className="block font-semibold text-gray-700 mb-1">Full Name *</label>
               <input
                 type="text"
-                placeholder="e.g. Kavya Rai"
+                placeholder="Your name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full p-2.5 border rounded-xl"
@@ -134,14 +140,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
           <div>
             <label className="block font-semibold text-gray-700 mb-1">
-              {mode === 'login' ? 'Email or Username *' : 'Email Address *'}
+              Email Address *
             </label>
             <input
-              type="text"
-              placeholder={mode === 'login' ? 'admin@oasis-salon.in or kavya@example.com' : 'kavya@example.com'}
+              type="email"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2.5 border rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block font-semibold text-gray-700">Password *</label>
+            <input
+              type="password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border p-2.5"
             />
           </div>
 
@@ -160,48 +177,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full py-3 bg-[#26352A] text-white rounded-xl font-semibold hover:bg-[#19231C] active:scale-95 transition-all shadow-md mt-2"
           >
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
+            {isSubmitting ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
-        {import.meta.env.DEV && <>
-        {/* Development-only demo accounts */}
-        <div className="bg-[#F5F1E8] p-5 border-t border-[#D8C9A7]/40 space-y-2 text-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
-            Instant Demo Account Sign-In (For Testing)
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleQuickDemo('customer')}
-              className="p-2 bg-white rounded-xl border border-gray-200 text-center hover:border-[#26352A] transition-colors"
-            >
-              <User className="w-3.5 h-3.5 mx-auto text-[#26352A] mb-0.5" />
-              <span className="text-[10px] font-bold text-[#26352A] block">Customer</span>
-              <span className="text-[9px] text-gray-400">Kavya Rai</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickDemo('staff')}
-              className="p-2 bg-white rounded-xl border border-gray-200 text-center hover:border-[#26352A] transition-colors"
-            >
-              <Briefcase className="w-3.5 h-3.5 mx-auto text-[#26352A] mb-0.5" />
-              <span className="text-[10px] font-bold text-[#26352A] block">Staff</span>
-              <span className="text-[9px] text-gray-400">Ramesh Shetty</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickDemo('admin')}
-              className="p-2 bg-white rounded-xl border border-gray-200 text-center hover:border-[#26352A] transition-colors"
-            >
-              <Shield className="w-3.5 h-3.5 mx-auto text-[#26352A] mb-0.5" />
-              <span className="text-[10px] font-bold text-[#26352A] block">Admin</span>
-              <span className="text-[9px] text-gray-400">Salon Director</span>
-            </button>
-          </div>
-        </div>
-        </>}
       </div>
     </div>
   );

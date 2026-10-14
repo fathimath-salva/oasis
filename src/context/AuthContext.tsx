@@ -1,136 +1,144 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+﻿import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { UserProfile, UserRole } from '../types/salon';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+
+interface AuthResult {
+  error?: string;
+  needsEmailConfirmation?: boolean;
+  role?: UserRole;
+}
 
 interface AuthContextType {
   user: UserProfile | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (email: string, role?: UserRole) => boolean;
-  register: (fullName: string, email: string, phone: string) => boolean;
-  logout: () => void;
-  updateProfile: (updates: Partial<UserProfile>) => void;
-  switchRole: (newRole: UserRole) => void;
+  isRoleVerified: boolean;
+  authConfigured: boolean;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (fullName: string, email: string, phone: string, password: string) => Promise<AuthResult>;
+  logout: () => Promise<void>;
+  updateProfile: (updates: Partial<Pick<UserProfile, 'fullName' | 'email' | 'phone'>>) => void;
 }
-
-const DEFAULT_USERS: Record<UserRole, UserProfile> = {
-  admin: {
-    id: 'usr-admin-1',
-    fullName: 'Salon Director (Admin)',
-    email: 'admin@oasis-salon.in',
-    phone: '9151550077',
-    role: 'admin',
-    createdAt: '2026-01-01T00:00:00Z',
-  },
-  staff: {
-    id: 'stf-1',
-    fullName: 'Ramesh Shetty (Senior Stylist)',
-    email: 'ramesh@oasis-salon.in',
-    phone: '9151550077',
-    role: 'staff',
-    createdAt: '2026-01-15T00:00:00Z',
-  },
-  customer: {
-    id: 'cust-demo-1',
-    fullName: 'Kavya Rai',
-    email: 'kavya.rai@example.com',
-    phone: '9845112233',
-    role: 'customer',
-    createdAt: '2026-02-01T00:00:00Z',
-  },
-};
-
-const AUTH_STORAGE_KEY = 'the_oasis_current_user_v1';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type ProfileRow = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  role: UserRole;
+  created_at: string;
+};
+
+const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, phone, role, created_at')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error || !data) return null;
+  const profile = data as ProfileRow;
+  return {
+    id: profile.id,
+    fullName: profile.full_name,
+    email: profile.email,
+    phone: profile.phone,
+    role: profile.role,
+    createdAt: profile.created_at,
+  };
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    if (!import.meta.env.DEV) return null;
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      return stored ? JSON.parse(stored) as UserProfile : DEFAULT_USERS.customer;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isRoleVerified, setIsRoleVerified] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
-  }, [user]);
+    if (!isSupabaseConfigured) return;
 
-  const login = (email: string, role?: UserRole): boolean => {
-    if (!import.meta.env.DEV) return false;
-    const cleanEmail = email.trim().toLowerCase();
-    
-    // Check if matching staff/admin credentials
-    if (import.meta.env.DEV && (cleanEmail === 'admin@oasis-salon.in' || role === 'admin')) {
-      setUser(DEFAULT_USERS.admin);
-      return true;
-    }
-    if (import.meta.env.DEV && (cleanEmail.includes('oasis-salon.in') || role === 'staff')) {
-      setUser(DEFAULT_USERS.staff);
-      return true;
-    }
-
-    // Customer login
-    const customerUser: UserProfile = {
-      id: `usr-cust-${Date.now()}`,
-      fullName: cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-      email: cleanEmail,
-      phone: '9845112233',
-      role: 'customer',
-      createdAt: new Date().toISOString(),
+    let active = true;
+    const loadProfile = async (userId: string) => {
+      const profile = await fetchUserProfile(userId);
+      if (!active) return;
+      if (!profile) {
+        setUser(null);
+        setIsRoleVerified(false);
+        return;
+      }
+      setUser(profile);
+      setIsRoleVerified(true);
     };
-    setUser(customerUser);
-    return true;
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) void loadProfile(data.session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setUser(null);
+        setIsRoleVerified(false);
+      } else {
+        void loadProfile(session.user.id);
+      }
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) return { error: 'Sign-in is unavailable because Supabase is not configured for this site.' };
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) return { error: error.message };
+    const profile = data.user ? await fetchUserProfile(data.user.id) : null;
+    if (!profile) return { error: 'Your account profile is missing. Please contact the salon administrator.' };
+    setUser(profile);
+    setIsRoleVerified(true);
+    return { role: profile.role };
   };
 
-  const register = (fullName: string, email: string, phone: string): boolean => {
-    if (!import.meta.env.DEV) return false;
-    // Security check: public registrations are strictly assigned 'customer' role
-    const newUser: UserProfile = {
-      id: `usr-cust-${Date.now()}`,
-      fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      role: 'customer',
-      createdAt: new Date().toISOString(),
-    };
-    setUser(newUser);
-    return true;
+  const register = async (fullName: string, email: string, phone: string, password: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) return { error: 'Account creation is unavailable because Supabase is not configured for this site.' };
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { data: { full_name: fullName.trim(), phone: phone.trim() } },
+    });
+    if (error) return { error: error.message };
+    if (!data.session) return { needsEmailConfirmation: true };
+    if (!data.user) return { error: 'Your account was created, but no user profile was returned. Please sign in.' };
+    const profile = await fetchUserProfile(data.user.id);
+    if (!profile) return { error: 'Your profile could not be created. Please contact the salon administrator.' };
+    setUser(profile);
+    setIsRoleVerified(true);
+    return { role: profile.role };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (isSupabaseConfigured) await supabase.auth.signOut();
     setUser(null);
+    setIsRoleVerified(false);
   };
 
-  const updateProfile = (updates: Partial<UserProfile>) => {
+  const updateProfile = (updates: Partial<Pick<UserProfile, 'fullName' | 'email' | 'phone'>>) => {
     if (!user) return;
     setUser({ ...user, ...updates });
   };
 
-  const switchRole = (newRole: UserRole) => {
-    if (!import.meta.env.DEV) return;
-    setUser(DEFAULT_USERS[newRole]);
-  };
-
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        role: user ? user.role : 'customer',
-        isAuthenticated: Boolean(user),
-        login,
-        register,
-        logout,
-        updateProfile,
-        switchRole,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      role: user?.role ?? 'customer',
+      isAuthenticated: Boolean(user),
+      isRoleVerified,
+      authConfigured: isSupabaseConfigured,
+      login,
+      register,
+      logout,
+      updateProfile,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -138,8 +146,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

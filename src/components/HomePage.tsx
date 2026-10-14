@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
-import { SALON_INFO, INITIAL_SERVICES, GALLERY_ITEMS } from '../constants/salonData';
+import { SALON_INFO, INITIAL_SERVICES } from '../constants/salonData';
 import { formatINR } from '../lib/formatters';
 
 const SERVICE_COLLECTIONS = [
@@ -39,7 +39,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     .filter(Boolean) as typeof INITIAL_SERVICES;
 
   return (
-    <div className="space-y-12 pb-14 sm:space-y-14">
+    <div className="space-y-8 pb-14 sm:space-y-10">
       {/* 1. HERO SECTION */}
       <section className="bg-[#F5F1E8] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
         <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
@@ -132,7 +132,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       disabled={!service.priceConfirmed || service.requiresConfirmation}
                       className="px-3.5 py-2 bg-[#53583A] text-white text-xs font-medium hover:bg-[#343923] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      View Details
+                      Book Now
                     </button>
                   </div>
                 </div>
@@ -157,50 +157,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           </figure>
         </div>
       </section>
-      {/* 6. GALLERY PREVIEW */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#53583A]">
-              Visual Tour
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#343923]">
-              Treatment inspiration
-            </h2>
-          </div>
-          <button
-            onClick={() => onNavigate('gallery')}
-            className="inline-flex items-center space-x-1 text-xs font-semibold text-[#343923] hover:text-[#53583A] transition-colors"
-          >
-            <span>Explore Full Gallery</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {GALLERY_ITEMS.slice(0, 6).map((item) => (
-            <div
-              key={item.id}
-              onClick={() => onNavigate('gallery')}
-              className="group relative rounded-xl overflow-hidden cursor-pointer h-56 bg-gray-100"
-            >
-              <img
-                src={item.imageUrl}
-                alt={`Illustrative ${item.category.toLowerCase()} image`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute bottom-2 left-2 bg-[#F5F1E8]/90 px-2 py-1 text-[10px] text-[#343923]">Illustrative image</div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                <span className="text-[10px] uppercase tracking-wider text-[#A8B7A0] font-semibold">
-                  {item.category}
-                </span>
-                <p className="text-xs font-bold text-white">{item.title}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* 7. SALON LOCATION & CONTACT */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-6 border-y border-[#53583A]/20 py-8 md:grid-cols-3 md:items-center">

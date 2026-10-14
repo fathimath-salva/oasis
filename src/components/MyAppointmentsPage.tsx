@@ -41,9 +41,12 @@ export const MyAppointmentsPage: React.FC<MyAppointmentsPageProps> = ({ onOpenBo
 
   // Filtered by current user or query
   const displayedAppointments = useMemo(() => {
+    if (!user) return [];
+    const ownAppointments = appointments.filter((appointment) => appointment.customerId === user.id);
+
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
-      return appointments.filter(
+      return ownAppointments.filter(
         (a) =>
           a.bookingReference.toLowerCase().includes(q) ||
           a.customerPhone.toLowerCase().includes(q) ||
@@ -51,15 +54,7 @@ export const MyAppointmentsPage: React.FC<MyAppointmentsPageProps> = ({ onOpenBo
           a.customerName.toLowerCase().includes(q)
       );
     }
-    if (user) {
-      return appointments.filter(
-        (a) =>
-          a.customerId === user.id ||
-          a.customerPhone === user.phone ||
-          a.customerEmail === user.email
-      );
-    }
-    return appointments.slice(0, 5);
+    return ownAppointments;
   }, [appointments, searchQuery, user]);
 
   const upcomingAppointments = useMemo(() => {

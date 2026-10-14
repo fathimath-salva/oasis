@@ -216,7 +216,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
         </div>
 
         {/* Hair Length Filter (when viewing hair categories) */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 text-xs">
+        {selectedGender !== 'men' && allServices.some((service) => service.gender !== 'men' && service.hairLength) && <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 text-xs">
           <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
             Hair Length Filter:
           </span>
@@ -239,7 +239,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               {len.label}
             </button>
           ))}
-        </div>
+        </div>}
 
         {/* Category Pills Slider */}
         <div className="pt-2 border-t border-gray-100 flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-thin">
@@ -356,7 +356,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
             )}
 
             <div className="p-4 bg-[#F5F1E8] rounded-xl flex items-center justify-between text-xs">
-              {detailService.hairLength && (
+              {detailService.gender !== 'men' && detailService.hairLength && (
                 <div>
                   <span className="text-gray-500 block text-[11px]">Hair Length</span>
                   <span className="font-bold text-[#343923] capitalize">

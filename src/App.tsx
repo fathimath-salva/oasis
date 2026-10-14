@@ -5,23 +5,24 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './components/HomePage';
 import { ServicesPage } from './components/ServicesPage';
-import { GalleryPage } from './components/GalleryPage';
 import { AboutPage } from './components/AboutPage';
 import { ContactPage } from './components/ContactPage';
 import { TermsPolicyPage } from './components/TermsPolicyPage';
 import { MyAppointmentsPage } from './components/MyAppointmentsPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { StaffDashboard } from './components/StaffDashboard';
+import { MyAccountPage } from './components/MyAccountPage';
 import { BookingModal } from './components/BookingModal';
 import { AuthModal } from './components/AuthModal';
 
 const MainApp: React.FC = () => {
-  const { role } = useAuth();
+  const { user, role, isRoleVerified } = useAuth();
   const { openBooking } = useBooking();
 
   const [currentView, setCurrentView] = useState<string>('home');
   const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
   const [authFromBooking, setAuthFromBooking] = useState(false);
 
   // Scroll to top on navigation
@@ -33,11 +34,11 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F1E8] text-[#26352A]">
-      {/* Navbar with demo role switcher & navigation */}
+      {/* Public navigation and account actions */}
       <Navbar
         currentView={currentView}
         onNavigate={handleNavigate}
-        onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenAuth={(mode) => { setAuthInitialMode(mode); setAuthModalOpen(true); }}
       />
 
       {/* Main Page Routing */}
@@ -46,27 +47,28 @@ const MainApp: React.FC = () => {
 
         {currentView === 'services' && <ServicesPage initialFilter={serviceFilter} />}
 
-        {currentView === 'gallery' && <GalleryPage />}
-
         {currentView === 'about' && <AboutPage />}
 
         {currentView === 'contact' && <ContactPage />}
 
         {currentView === 'terms' && <TermsPolicyPage />}
 
-        {currentView === 'my-appointments' && (
+        {currentView === 'my-appointments' && user && isRoleVerified && role === 'customer' && (
           <MyAppointmentsPage onOpenBooking={() => openBooking()} />
         )}
 
-        {currentView === 'admin-dashboard' && <AdminDashboard />}
+        {currentView === 'my-account' && user && isRoleVerified && role === 'customer' && <MyAccountPage />}
 
-        {currentView === 'staff-dashboard' && <StaffDashboard />}
+        {currentView === 'admin-dashboard' && user && isRoleVerified && role === 'admin' && <AdminDashboard />}
+
+        {currentView === 'staff-dashboard' && user && isRoleVerified && role === 'staff' && <StaffDashboard />}
       </main>
 
       {/* Interactive Booking Modal (accessible globally from any page) */}
       <BookingModal
         onRequireSignIn={() => {
           setAuthFromBooking(true);
+          setAuthInitialMode('login');
           setAuthModalOpen(true);
         }}
         onNavigateToAppointments={() => {
@@ -76,12 +78,14 @@ const MainApp: React.FC = () => {
 
       {/* Login & Registration Modal */}
       <AuthModal
+        key={`${authModalOpen}-${authInitialMode}`}
         isOpen={authModalOpen}
+        initialMode={authInitialMode}
         onClose={() => setAuthModalOpen(false)}
-        onSuccess={() => {
+        onSuccess={(authenticatedRole) => {
           if (authFromBooking) setAuthFromBooking(false);
-          else if (role === 'admin') handleNavigate('admin-dashboard');
-          else if (role === 'staff') handleNavigate('staff-dashboard');
+          else if (authenticatedRole === 'admin') handleNavigate('admin-dashboard');
+          else if (authenticatedRole === 'staff') handleNavigate('staff-dashboard');
           else handleNavigate('my-appointments');
         }}
       />

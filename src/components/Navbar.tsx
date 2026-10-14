@@ -7,7 +7,7 @@ import { SALON_INFO } from '../constants/salonData';
 interface NavbarProps {
   currentView: string;
   onNavigate: (view: string, filter?: string) => void;
-  onOpenAuth: () => void;
+  onOpenAuth: (mode: 'login' | 'register') => void;
 }
 
 const serviceLinks = [
@@ -18,12 +18,16 @@ const serviceLinks = [
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenAuth }) => {
-  const { user, role, switchRole, logout } = useAuth();
+  const { user, role, isRoleVerified, logout } = useAuth();
   const { openBooking } = useBooking();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const servicesMenuRef = useRef<HTMLDivElement>(null);
+  const desktopAccountRef = useRef<HTMLDivElement>(null);
+  const mobileAccountRef = useRef<HTMLDivElement>(null);
+  const [desktopAccountOpen, setDesktopAccountOpen] = useState(false);
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
 
   useEffect(() => {
     setServicesOpen(false);
@@ -36,11 +40,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
         setServicesOpen(false);
         setMobileServicesOpen(false);
       }
+      if (event.target instanceof Node && !desktopAccountRef.current?.contains(event.target)) setDesktopAccountOpen(false);
+      if (event.target instanceof Node && !mobileAccountRef.current?.contains(event.target)) setMobileAccountOpen(false);
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setServicesOpen(false);
         setMobileServicesOpen(false);
+        setDesktopAccountOpen(false);
+        setMobileAccountOpen(false);
       }
     };
     document.addEventListener("mousedown", closeOutside);
@@ -58,6 +66,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
     setMobileMenuOpen(false);
     setMobileServicesOpen(false);
     setServicesOpen(false);
+    setDesktopAccountOpen(false);
+    setMobileAccountOpen(false);
   };
 
   return (
@@ -90,27 +100,29 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                   {serviceLinks.map((item) => <button role="menuitem" key={item.filter} onClick={() => navigate("services", item.filter)} className="block w-full whitespace-nowrap px-4 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">{item.label}</button>)}
                 </div>}
               </div>
-              <button onClick={() => navigate('gallery')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'gallery' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Gallery</button>
               <button onClick={() => navigate('about')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'about' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Our Story</button>
               <button onClick={() => navigate('contact')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'contact' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Contact</button>
             </nav>
 
             <div className="hidden lg:flex shrink-0 items-center gap-2">
-              <details className="relative">
-                <summary aria-label="Account menu" className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-2 text-sm text-[#53583A] hover:text-[#343923]">
+              <div ref={desktopAccountRef} className="relative">
+                <button type="button" aria-label="Account menu" aria-expanded={desktopAccountOpen} onClick={() => setDesktopAccountOpen((open) => !open)} className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-2 text-sm text-[#53583A] hover:text-[#343923]">
                   <UserRound className="h-4 w-4" /><span>Account</span><ChevronDown className="h-3.5 w-3.5" />
-                </summary>
-                <div className="absolute right-0 top-full z-50 mt-2 min-w-52 border border-[#53583A]/15 bg-[#F5F1E8] p-2 shadow-lg">
-                  {user && role === 'customer' && <button onClick={() => navigate('my-appointments')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>}
-                  {role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Portal</button>}
-                  {role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Panel</button>}
-                  {import.meta.env.DEV && <div className="mt-1 border-t border-[#53583A]/15 pt-1">
-                    <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-[#53583A]">Development role</p>
-                    {(['customer', 'staff', 'admin'] as const).map((demoRole) => <button key={demoRole} onClick={() => switchRole(demoRole)} className="block w-full px-3 py-1.5 text-left text-sm capitalize text-[#343923] hover:bg-[#DDE4D7]">{demoRole}</button>)}
-                  </div>}
-                  {user ? <button onClick={logout} className="mt-1 flex w-full items-center gap-2 border-t border-[#53583A]/15 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]"><LogOut className="h-3.5 w-3.5" />Sign out</button> : <button onClick={onOpenAuth} className="block w-full px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign in</button>}
-                </div>
-              </details>
+                </button>
+                {desktopAccountOpen && <div className="absolute right-0 top-full z-50 mt-2 min-w-52 border border-[#53583A]/15 bg-[#F5F1E8] p-2 shadow-lg">
+                  {!user && <>
+                    <button onClick={() => { setDesktopAccountOpen(false); onOpenAuth('login'); }} className="block w-full px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign In</button>
+                    <button onClick={() => { setDesktopAccountOpen(false); onOpenAuth('register'); }} className="block w-full px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Create Account</button>
+                  </>}
+                  {user && role === 'customer' && <>
+                    <button onClick={() => navigate('my-appointments')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>
+                    <button onClick={() => navigate('my-account')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Account</button>
+                  </>}
+                  {user && isRoleVerified && role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Dashboard</button>}
+                  {user && isRoleVerified && role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Dashboard</button>}
+                  {user && <button onClick={() => { logout(); navigate('home'); }} className="mt-1 flex w-full items-center gap-2 border-t border-[#53583A]/15 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]"><LogOut className="h-3.5 w-3.5" />Sign Out</button>}
+                </div>}
+              </div>
               <button onClick={() => openBooking()} className="whitespace-nowrap bg-[#53583A] px-4 py-2.5 text-sm text-white transition-colors hover:bg-[#343923]">Book Appointment</button>
             </div>
 
@@ -132,25 +144,25 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                 {serviceLinks.map((item) => <button role="menuitem" key={item.filter} onClick={() => navigate("services", item.filter)} className="block w-full px-3 py-2 text-left text-sm text-[#53583A] hover:bg-[#DDE4D7]">{item.label}</button>)}
               </div>}
             </div>
-            <button onClick={() => navigate('gallery')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Gallery</button>
             <button onClick={() => navigate('about')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Our Story</button>
             <button onClick={() => navigate('contact')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Contact</button>
           </nav>
-          <details className="mx-auto mt-3 max-w-7xl border-t border-[#53583A]/15 pt-3">
-            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm text-[#343923]"><UserRound className="h-4 w-4" />Account <ChevronDown className="h-3.5 w-3.5" /></summary>
-            <div className="grid grid-cols-2 gap-1 px-3 pb-2">
-              {user && role === 'customer' && <button onClick={() => navigate('my-appointments')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>}
-              {role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Portal</button>}
-              {role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Panel</button>}
-              {user ? <button onClick={logout} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign out</button> : <button onClick={() => { onOpenAuth(); setMobileMenuOpen(false); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign in</button>}
-              {import.meta.env.DEV && <div className="col-span-2 border-t border-[#53583A]/15 pt-2">
-                <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-[#53583A]">Development role</p>
-                <div className="flex flex-wrap gap-2 px-3">
-                  {(['customer', 'staff', 'admin'] as const).map((demoRole) => <button key={demoRole} onClick={() => switchRole(demoRole)} className="border border-[#53583A]/30 px-3 py-1.5 text-xs capitalize text-[#343923]">{demoRole}</button>)}
-                </div>
-              </div>}
-            </div>
-          </details>
+          <div ref={mobileAccountRef} className="mx-auto mt-3 max-w-7xl border-t border-[#53583A]/15 pt-3">
+            <button type="button" aria-expanded={mobileAccountOpen} onClick={() => setMobileAccountOpen((open) => !open)} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#343923]"><UserRound className="h-4 w-4" />Account <ChevronDown className="h-3.5 w-3.5" /></button>
+            {mobileAccountOpen && <div className="grid grid-cols-2 gap-1 px-3 pb-2">
+              {!user && <>
+                <button onClick={() => { setMobileAccountOpen(false); onOpenAuth('login'); setMobileMenuOpen(false); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign In</button>
+                <button onClick={() => { setMobileAccountOpen(false); onOpenAuth('register'); setMobileMenuOpen(false); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Create Account</button>
+              </>}
+              {user && role === 'customer' && <>
+                <button onClick={() => navigate('my-appointments')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>
+                <button onClick={() => navigate('my-account')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Account</button>
+              </>}
+              {user && isRoleVerified && role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Dashboard</button>}
+              {user && isRoleVerified && role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Dashboard</button>}
+              {user && <button onClick={() => { logout(); navigate('home'); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign Out</button>}
+            </div>}
+          </div>
         </div>}      </header>
     </>
   );

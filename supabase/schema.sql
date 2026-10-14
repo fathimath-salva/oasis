@@ -42,6 +42,29 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );
 
+-- Every new Supabase identity receives a customer profile. Privileged roles
+-- must be assigned by an administrator after the account has been created.
+CREATE OR REPLACE FUNCTION create_profile_for_auth_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, email, phone, role)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data ->> 'full_name', split_part(NEW.email, '@', 1)),
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data ->> 'phone', ''),
+    'customer'
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS create_profile_after_auth_signup ON auth.users;
+CREATE TRIGGER create_profile_after_auth_signup
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION create_profile_for_auth_user();
+
 -- Index for quick profile search by email & phone
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_phone ON profiles(phone);
@@ -51,7 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
 CREATE OR REPLACE FUNCTION get_user_role(user_id UUID)
 RETURNS user_role AS $$
   SELECT role FROM profiles WHERE id = user_id;
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 
 CREATE OR REPLACE FUNCTION is_admin()
 RETURNS BOOLEAN AS $$
@@ -59,7 +82,7 @@ RETURNS BOOLEAN AS $$
     SELECT 1 FROM profiles 
     WHERE id = auth.uid() AND role = 'admin'
   );
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
 
 CREATE OR REPLACE FUNCTION is_staff()
 RETURNS BOOLEAN AS $$
@@ -67,7 +90,28 @@ RETURNS BOOLEAN AS $$
     SELECT 1 FROM profiles 
     WHERE id = auth.uid() AND role IN ('staff', 'admin')
   );
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+$$ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public;
+
+-- A profile owner may edit contact details but cannot grant themselves a privileged role.
+CREATE OR REPLACE FUNCTION prevent_profile_role_escalation()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.id IS DISTINCT FROM OLD.id THEN
+    RAISE EXCEPTION 'Profile identifiers cannot be changed';
+  END IF;
+
+  IF NEW.role IS DISTINCT FROM OLD.role AND NOT is_admin() THEN
+    RAISE EXCEPTION 'Only an authorised administrator can change profile roles';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = public;
+
+DROP TRIGGER IF EXISTS prevent_profile_role_escalation_trigger ON profiles;
+CREATE TRIGGER prevent_profile_role_escalation_trigger
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION prevent_profile_role_escalation();
 
 -- ----------------------------------------------------------------------------
 -- 3. SERVICES CATALOGUE
