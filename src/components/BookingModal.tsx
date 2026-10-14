@@ -9,14 +9,16 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
+import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/db';
 import { formatINR, formatDuration, formatTime12Hour, formatDateWithWeekday, formatServicePrice } from '../lib/formatters';
 
 interface BookingModalProps {
   onNavigateToAppointments?: () => void;
+  onRequireSignIn?: () => void;
 }
 
-export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointments }) => {
+export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointments, onRequireSignIn }) => {
   const {
     isOpen,
     closeBooking,
@@ -41,6 +43,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
     lastConfirmedAppointment,
     resetBooking,
   } = useBooking();
+  const { user } = useAuth();
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'men' | 'women' | 'unisex'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -634,7 +637,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
 
               {step === 4 && (
                 <button
-                  onClick={() => submitBooking()}
+                  onClick={() => user ? submitBooking() : onRequireSignIn?.()}
                   disabled={isSubmitting}
                   className="px-6 py-2.5 bg-[#26352A] text-[#F5F1E8] rounded-xl text-xs font-semibold hover:bg-[#19231C] active:scale-95 transition-all shadow-md flex items-center space-x-2"
                 >
@@ -643,7 +646,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                   ) : (
                     <>
                       <Sparkles className="w-3.5 h-3.5 text-[#D8C9A7]" />
-                      <span>Confirm Booking</span>
+                      <span>{user ? 'Confirm Booking' : 'Sign in to Confirm'}</span>
                     </>
                   )}
                 </button>

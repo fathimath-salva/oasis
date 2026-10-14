@@ -22,6 +22,7 @@ const MainApp: React.FC = () => {
   const [currentView, setCurrentView] = useState<string>('home');
   const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authFromBooking, setAuthFromBooking] = useState(false);
 
   // Scroll to top on navigation
   const handleNavigate = (view: string, filter = 'all') => {
@@ -64,6 +65,10 @@ const MainApp: React.FC = () => {
 
       {/* Interactive Booking Modal (accessible globally from any page) */}
       <BookingModal
+        onRequireSignIn={() => {
+          setAuthFromBooking(true);
+          setAuthModalOpen(true);
+        }}
         onNavigateToAppointments={() => {
           handleNavigate('my-appointments');
         }}
@@ -74,7 +79,8 @@ const MainApp: React.FC = () => {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         onSuccess={() => {
-          if (role === 'admin') handleNavigate('admin-dashboard');
+          if (authFromBooking) setAuthFromBooking(false);
+          else if (role === 'admin') handleNavigate('admin-dashboard');
           else if (role === 'staff') handleNavigate('staff-dashboard');
           else handleNavigate('my-appointments');
         }}

@@ -45,12 +45,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
+    if (!import.meta.env.DEV) return null;
     try {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      const restored = stored ? JSON.parse(stored) as UserProfile : DEFAULT_USERS.customer;
-      return import.meta.env.DEV ? restored : { ...restored, role: 'customer' };
+      return stored ? JSON.parse(stored) as UserProfile : DEFAULT_USERS.customer;
     } catch {
-      return DEFAULT_USERS.customer;
+      return null;
     }
   });
 
@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const login = (email: string, role?: UserRole): boolean => {
+    if (!import.meta.env.DEV) return false;
     const cleanEmail = email.trim().toLowerCase();
     
     // Check if matching staff/admin credentials
@@ -89,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = (fullName: string, email: string, phone: string): boolean => {
+    if (!import.meta.env.DEV) return false;
     // Security check: public registrations are strictly assigned 'customer' role
     const newUser: UserProfile = {
       id: `usr-cust-${Date.now()}`,

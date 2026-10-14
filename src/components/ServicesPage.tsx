@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   Search,
-  Info,
   X,
   HelpCircle,
 } from 'lucide-react';
@@ -123,14 +122,25 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
     });
   }, [allServices, selectedGender, selectedCategory, selectedLength, searchQuery]);
 
+  const serviceGroups = useMemo(() => {
+    const genders = selectedGender === 'all' ? ['men', 'women', 'unisex'] as const : [selectedGender];
+    return genders.map((gender) => ({
+      gender,
+      categories: SERVICE_CATEGORIES.map((category) => ({
+        category,
+        services: filteredServices.filter((service) => service.category === category && (selectedGender === 'all' ? service.gender === gender : service.gender === gender || service.gender === 'unisex')),
+      })).filter((group) => group.services.length > 0),
+    })).filter((group) => group.categories.length > 0);
+  }, [filteredServices, selectedGender]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       {/* Page Header */}
       <div className="text-center space-y-3 max-w-3xl mx-auto">
-        <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
+        <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#53583A]">
           Hair, Beauty & Spa
         </span>
-        <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#26352A]">
+        <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#343923]">
           Services & Prices
         </h1>
         <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
@@ -139,7 +149,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
       </div>
 
       {/* Control Bar: Search & Gender Tabs */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#D8C9A7]/40 space-y-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#A8B7A0]/40 space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Gender Filter Tabs */}
           <div className="flex items-center space-x-1.5 bg-[#F5F1E8] p-1.5 rounded-xl w-full md:w-auto">
@@ -150,8 +160,8 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               }}
               className={`flex-1 md:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                 selectedGender === 'all'
-                  ? 'bg-[#26352A] text-white shadow-xs'
-                  : 'text-[#26352A] hover:bg-[#E3E9DF]'
+                  ? 'bg-[#343923] text-white shadow-xs'
+                  : 'text-[#343923] hover:bg-[#DDE4D7]'
               }`}
             >
               All Services
@@ -163,8 +173,8 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               }}
               className={`flex-1 md:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                 selectedGender === 'women'
-                  ? 'bg-[#26352A] text-white shadow-xs'
-                  : 'text-[#26352A] hover:bg-[#E3E9DF]'
+                  ? 'bg-[#343923] text-white shadow-xs'
+                  : 'text-[#343923] hover:bg-[#DDE4D7]'
               }`}
             >
               Women's Services
@@ -176,11 +186,11 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               }}
               className={`flex-1 md:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                 selectedGender === 'men'
-                  ? 'bg-[#26352A] text-white shadow-xs'
-                  : 'text-[#26352A] hover:bg-[#E3E9DF]'
+                  ? 'bg-[#343923] text-white shadow-xs'
+                  : 'text-[#343923] hover:bg-[#DDE4D7]'
               }`}
             >
-              Men's Catalogue (Oasis-men’s Catalog.pdf)
+              Men's Services
             </button>
           </div>
 
@@ -192,7 +202,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               placeholder="Search by name, treatment, or fruit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#D8C9A7] bg-white focus:outline-none focus:ring-2 focus:ring-[#26352A]/20"
+              className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#A8B7A0] bg-white focus:outline-none focus:ring-2 focus:ring-[#343923]/20"
             />
             {searchQuery && (
               <button
@@ -222,8 +232,8 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               onClick={() => setSelectedLength(len.id)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                 selectedLength === len.id
-                  ? 'bg-[#76603F] text-white font-semibold'
-                  : 'bg-[#F5F1E8] text-gray-700 hover:bg-[#E3E9DF]'
+                  ? 'bg-[#53583A] text-white font-semibold'
+                  : 'bg-[#F5F1E8] text-gray-700 hover:bg-[#DDE4D7]'
               }`}
             >
               {len.label}
@@ -237,8 +247,8 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
             onClick={() => setSelectedCategory('all')}
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               selectedCategory === 'all'
-                ? 'bg-[#26352A] text-white'
-                : 'bg-[#E3E9DF]/70 text-[#26352A] hover:bg-[#E3E9DF]'
+                ? 'bg-[#343923] text-white'
+                : 'bg-[#DDE4D7]/70 text-[#343923] hover:bg-[#DDE4D7]'
             }`}
           >
             All Groups ({filteredServices.length})
@@ -254,8 +264,8 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   selectedCategory === cat
-                    ? 'bg-[#26352A] text-white'
-                    : 'bg-[#E3E9DF]/70 text-[#26352A] hover:bg-[#E3E9DF]'
+                    ? 'bg-[#343923] text-white'
+                    : 'bg-[#DDE4D7]/70 text-[#343923] hover:bg-[#DDE4D7]'
                 }`}
               >
                 {cat} ({count})
@@ -265,79 +275,33 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
         </div>
       </div>
 
-      {/* Services List Grid */}
-      <div className="max-w-4xl mx-auto divide-y divide-[#53583A]/20">
-        {filteredServices.map((service) => (
-          <div
-            key={service.id}
-            className="bg-white/70 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 group"
-          >
-            {/* Top row: Category, gender tag, hair length tag */}
-            <div>
-              <div className="flex items-center justify-between gap-1.5">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#76603F]">
-                  {service.category}
-                </span>
-
-                <div className="flex items-center space-x-1.5">
-                  <span
-                    className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                      service.gender === 'men'
-                        ? 'bg-[#DDE4D7] text-[#343923]'
-                        : 'bg-[#EEE7DA] text-[#343923]'
-                    }`}
-                  >
-                    {service.gender === 'men' ? "Men's" : "Women's"}
-                  </span>
-                  {service.hairLength && (
-                    <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#E3E9DF] text-[#26352A]">
-                      {service.hairLength.replace('_', ' ')}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <h3 className="font-serif text-lg font-bold text-[#26352A] group-hover:text-[#76603F] transition-colors mt-1.5 leading-snug">
-                {service.name}
-              </h3>
-
+      {/* Catalogues stay grouped by gender and category so prices remain distinct. */}
+      <div className="mx-auto max-w-4xl space-y-10">
+        {serviceGroups.map((group) => (
+          <section key={group.gender} aria-label={`${group.gender} services`}>
+            {selectedGender === 'all' && <h2 className="mb-6 border-b border-[#53583A]/25 pb-3 font-serif text-2xl capitalize text-[#343923]">{group.gender === 'unisex' ? 'Unisex Services' : `${group.gender}'s Services`}</h2>}
+            <div className="space-y-8">
+              {group.categories.map(({ category, services }) => (
+                <section key={category} aria-label={category}>
+                  <h3 className="border-b border-[#53583A]/20 pb-2 font-serif text-xl text-[#343923]">{category}</h3>
+                  <div className="divide-y divide-[#53583A]/10">
+                    {services.map((service) => (
+                      <button key={service.id} type="button" onClick={() => setDetailService(service)} aria-label={`View details for ${service.name}`} className="flex w-full items-center justify-between gap-4 py-3 text-left hover:bg-[#EEE7DA]/70">
+                        <span className="text-sm text-[#343923] sm:text-base">{service.name}{service.hairLength && <span className="ml-2 text-xs text-[#53583A]">({service.hairLength.replace('_', ' ')})</span>}</span>
+                        <span className="shrink-0 text-sm font-medium text-[#343923] sm:text-base">{service.priceConfirmed && !service.requiresConfirmation ? formatServicePrice(service) : 'Price to be confirmed'}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
             </div>
-
-            {/* Price & CTA */}
-            <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] text-gray-400 flex items-center space-x-1">
-                  <span>{service.category}</span>
-                </span>
-                <span className="text-lg font-bold text-[#26352A] block mt-0.5">
-                  {service.priceConfirmed && !service.requiresConfirmation ? formatServicePrice(service) : 'Price to be confirmed'}
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-1.5">
-                <button
-                  onClick={() => setDetailService(service)}
-                  className="p-2 rounded-xl text-gray-600 hover:bg-[#E3E9DF] transition-colors"
-                  title="View details"
-                >
-                  <Info className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => openBooking(service)}
-                  disabled={!service.priceConfirmed || service.requiresConfirmation}
-                  className="px-4 py-2 rounded-xl bg-[#26352A] text-white text-xs font-semibold hover:bg-[#19231C] active:scale-95 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {!service.priceConfirmed || service.requiresConfirmation ? 'Ask the Salon' : 'Book Service'}
-                </button>
-              </div>
-            </div>
-          </div>
+          </section>
         ))}
       </div>
 
       {filteredServices.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-[#D8C9A7] p-8 space-y-3">
-          <p className="font-serif text-xl font-bold text-[#26352A]">No services match your filter</p>
+        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-[#A8B7A0] p-8 space-y-3">
+          <p className="font-serif text-xl font-bold text-[#343923]">No services match your filter</p>
           <p className="text-xs text-gray-500 max-w-sm mx-auto">
             Try switching catalogue tabs or clearing the search keywords.
           </p>
@@ -348,7 +312,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               setSelectedCategory('all');
               setSelectedLength('all');
             }}
-            className="px-4 py-2 rounded-xl bg-[#26352A] text-white text-xs font-semibold"
+            className="px-4 py-2 rounded-xl bg-[#343923] text-white text-xs font-semibold"
           >
             Reset Filters
           </button>
@@ -358,16 +322,16 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
       {/* SERVICE DETAILS MODAL */}
       {detailService && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-xl bg-[#F5F1E8] shadow-2xl overflow-hidden border border-[#D8C9A7]">
+          <div className="relative w-full max-w-xl bg-[#F5F1E8] shadow-2xl overflow-hidden border border-[#A8B7A0]">
             <img src={detailService.imageUrl || SERVICE_IMAGES[detailService.category]} alt={`Illustrative ${detailService.category.toLowerCase()} treatment`} className="h-56 sm:h-64 w-full object-cover" />
             <p className="absolute top-3 left-3 bg-[#343923]/85 text-white text-[10px] px-3 py-1">Illustrative image</p>
             <div className="p-6 space-y-4">
             <div className="flex justify-between items-start border-b border-gray-100 pb-3">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#76603F]">
-                  {detailService.category} • {detailService.gender.toUpperCase()}
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#53583A]">
+                  {detailService.category} · {detailService.gender.toUpperCase()}
                 </span>
-                <h3 className="font-serif text-2xl font-bold text-[#26352A] mt-1">
+                <h3 className="font-serif text-2xl font-bold text-[#343923] mt-1">
                   {detailService.name}
                 </h3>
               </div>
@@ -395,14 +359,14 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               {detailService.hairLength && (
                 <div>
                   <span className="text-gray-500 block text-[11px]">Hair Length</span>
-                  <span className="font-bold text-[#26352A] capitalize">
+                  <span className="font-bold text-[#343923] capitalize">
                     {detailService.hairLength.replace('_', ' ')}
                   </span>
                 </div>
               )}
               <div className="text-right">
                 <span className="text-gray-500 block text-[11px]">Official Price</span>
-                <span className="font-bold text-lg text-[#26352A]">
+                <span className="font-bold text-lg text-[#343923]">
                   {detailService.priceConfirmed && !detailService.requiresConfirmation ? formatServicePrice(detailService) : 'Price to be confirmed'}
                 </span>
               </div>
@@ -422,7 +386,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
                   openBooking(s);
                 }}
                 disabled={!detailService.priceConfirmed || detailService.requiresConfirmation}
-                className="px-6 py-2 bg-[#26352A] text-white rounded-xl text-xs font-semibold hover:bg-[#19231C] disabled:opacity-50"
+                className="px-6 py-2 bg-[#343923] text-white rounded-xl text-xs font-semibold hover:bg-[#19231C] disabled:opacity-50"
               >
                 Book This Service
               </button>

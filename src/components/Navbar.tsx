@@ -1,17 +1,5 @@
-import React, { useState } from 'react';
-import {
-  Clock,
-  MapPin,
-  Phone,
-  User,
-  Shield,
-  Briefcase,
-  Menu,
-  X,
-  Sparkles,
-  ChevronDown,
-  LogOut,
-} from 'lucide-react';
+﻿import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, LogOut, Menu, Phone, UserRound, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useBooking } from '../context/BookingContext';
 import { SALON_INFO } from '../constants/salonData';
@@ -22,322 +10,148 @@ interface NavbarProps {
   onOpenAuth: () => void;
 }
 
+const serviceLinks = [
+  { label: "Men's Services", filter: 'men' },
+  { label: "Women's Services", filter: 'women' },
+  { label: 'Spa & Body Treatments', filter: 'spa' },
+  { label: 'All Services', filter: 'all' },
+];
+
 export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenAuth }) => {
   const { user, role, switchRole, logout } = useAuth();
   const { openBooking } = useBooking();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const servicesMenuRef = useRef<HTMLDivElement>(null);
 
-  const navLinks = [
-    { label: 'Home', view: 'home' },
-    { label: "Men's Services", view: 'services', filter: 'men' },
-    { label: "Women's Services", view: 'services', filter: 'women' },
-    { label: 'Spa & Body Treatments', view: 'services', filter: 'spa' },
-    { label: 'All Services', view: 'services', filter: 'all' },
-    { label: 'Gallery', view: 'gallery' },
-    { label: 'About Us', view: 'about' },
-    { label: 'Contact', view: 'contact' },
-  ];
+  useEffect(() => {
+    setServicesOpen(false);
+    setMobileServicesOpen(false);
+  }, [currentView]);
+
+  useEffect(() => {
+    const closeOutside = (event: MouseEvent | TouchEvent) => {
+      if (event.target instanceof Node && !servicesMenuRef.current?.contains(event.target)) {
+        setServicesOpen(false);
+        setMobileServicesOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setServicesOpen(false);
+        setMobileServicesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closeOutside);
+    document.addEventListener("touchstart", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOutside);
+      document.removeEventListener("touchstart", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  const navigate = (view: string, filter = 'all') => {
+    onNavigate(view, filter);
+    setMobileMenuOpen(false);
+    setMobileServicesOpen(false);
+    setServicesOpen(false);
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#F5F1E8]/95 backdrop-blur-md border-b border-[#D8C9A7]/30 transition-all duration-300">
-      {/* Top micro-bar with address, hours and phone */}
-      <div className="bg-[#26352A] text-[#F5F1E8] text-xs py-1.5 px-4 sm:px-8 border-b border-[#D8C9A7]/20 hidden md:block">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <span className="flex items-center space-x-1.5 text-[#E3E9DF]/80">
-              <MapPin className="w-3.5 h-3.5 text-[#D8C9A7]" />
-              <span>Providence Plaza, Yelmudi Bridge, Puttur, Karnataka</span>
-            </span>
-            <span className="flex items-center space-x-1.5 text-[#E3E9DF]/80">
-              <Clock className="w-3.5 h-3.5 text-[#D8C9A7]" />
-              <span>Open Daily: 09:00 AM – 08:30 PM</span>
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <a
-              href={`tel:${SALON_INFO.phones[0].raw}`}
-              className="flex items-center space-x-1 text-[#D8C9A7] hover:text-[#FFFFFF] transition-colors"
-            >
-              <Phone className="w-3 h-3" />
-              <span>{SALON_INFO.phones[0].display}</span>
-            </a>
-            <span className="text-[#A8B7A0]/40">|</span>
-            <a
-              href={`tel:${SALON_INFO.phones[1].raw}`}
-              className="flex items-center space-x-1 text-[#D8C9A7] hover:text-[#FFFFFF] transition-colors"
-            >
-              <span>{SALON_INFO.phones[1].display}</span>
-            </a>
+    <>
+      <div className="bg-[#343923] text-[#F5F1E8] px-4 sm:px-6 lg:px-8 py-2 text-[11px]">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+          <span>Providence Plaza, Yelmudi Bridge, Puttur</span>
+          <div className="flex items-center gap-4">
+            {SALON_INFO.phones.map((phone) => (
+              <a key={phone.raw} href={`tel:${phone.raw}`} className="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-white">
+                <Phone className="w-3 h-3" />{phone.display}
+              </a>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Brand Logo & Typographic Identity */}
-          <button
-            onClick={() => onNavigate('home')}
-            className="flex flex-col items-start text-left group focus:outline-none"
-          >
-            <div className="flex items-center space-x-2">
-              <span className="text-2xl sm:text-3xl font-serif tracking-[0.18em] text-[#26352A] group-hover:text-[#76603F] transition-colors font-semibold">
-                THE OASIS
-              </span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#D8C9A7]" />
-            </div>
-            <div className="flex items-center space-x-1.5 text-[9px] sm:text-[10px] tracking-[0.25em] text-[#26352A]/80 font-medium uppercase">
-              <span>UNISEX SALON & SPA</span>
-              <span className="text-[#A8B7A0]">•</span>
-              <span className="text-[#76603F]">PUTTUR</span>
-            </div>
-          </button>
+      <header ref={servicesMenuRef} className="sticky top-0 z-50 border-b border-[#53583A]/15 bg-[#F5F1E8]/95 backdrop-blur">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="min-h-[72px] flex items-center justify-between gap-3">
+            <button onClick={() => navigate('home')} className="min-w-0 shrink-0 text-left leading-none" aria-label="THE OASIS UNISEX SALON & SPA home">
+              <span className="block whitespace-nowrap font-serif text-[21px] sm:text-2xl tracking-[0.12em] text-[#343923]">THE OASIS</span>
+              <span className="mt-1 block whitespace-nowrap text-[8px] sm:text-[9px] tracking-[0.16em] text-[#53583A]">UNISEX SALON & SPA | PUTTUR</span>
+            </button>
+            <nav aria-label="Main navigation" className="hidden lg:flex items-center justify-center gap-1 xl:gap-3 min-w-0">
+              <button onClick={() => navigate('home')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'home' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Home</button>
+              <div className="relative">
+                <button type="button" aria-expanded={servicesOpen} aria-controls="desktop-services-menu" onClick={() => setServicesOpen((open) => !open)} className="flex items-center gap-1 px-2 py-2 text-sm whitespace-nowrap text-[#53583A] hover:text-[#343923]">Services <ChevronDown className="w-3.5 h-3.5" /></button>
+                {servicesOpen && <div id="desktop-services-menu" className="absolute left-0 top-full z-50 mt-2 min-w-52 border border-[#53583A]/15 bg-[#F5F1E8] py-2 shadow-lg" role="menu">
+                  {serviceLinks.map((item) => <button role="menuitem" key={item.filter} onClick={() => navigate("services", item.filter)} className="block w-full whitespace-nowrap px-4 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">{item.label}</button>)}
+                </div>}
+              </div>
+              <button onClick={() => navigate('gallery')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'gallery' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Gallery</button>
+              <button onClick={() => navigate('about')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'about' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Our Story</button>
+              <button onClick={() => navigate('contact')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'contact' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Contact</button>
+            </nav>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
-            {navLinks.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => onNavigate(item.view, item.filter)}
-                className={`px-3 py-2 text-xs xl:text-sm font-medium tracking-wide rounded-md transition-colors ${
-                  currentView === item.view
-                    ? 'text-[#26352A] bg-[#E3E9DF]/60 font-semibold'
-                    : 'text-[#26352A]/80 hover:text-[#26352A] hover:bg-[#E3E9DF]/30'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Right Action Buttons */}
-          <div className="hidden sm:flex items-center space-x-3">
-            {import.meta.env.DEV && <>
-            {/* Development-only demo role switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className="flex items-center space-x-1.5 px-2.5 py-1.5 text-xs font-medium rounded-full bg-[#E3E9DF] text-[#26352A] border border-[#A8B7A0]/40 hover:bg-[#A8B7A0]/30 transition-all shadow-xs"
-                title="Switch active role for testing"
-              >
-                {role === 'admin' ? (
-                  <Shield className="w-3.5 h-3.5 text-[#26352A]" />
-                ) : role === 'staff' ? (
-                  <Briefcase className="w-3.5 h-3.5 text-[#26352A]" />
-                ) : (
-                  <User className="w-3.5 h-3.5 text-[#26352A]" />
-                )}
-                <span className="capitalize font-semibold">{role}</span>
-                <ChevronDown className="w-3 h-3 text-[#26352A]/60" />
-              </button>
-
-              {roleDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-[#D8C9A7]/40 py-2 z-50 text-xs">
-                  <div className="px-3 py-1 text-[10px] tracking-wider text-gray-400 uppercase font-bold border-b border-gray-100">
-                    Switch Test Account
-                  </div>
-                  <button
-                    onClick={() => {
-                      switchRole('customer');
-                      setRoleDropdownOpen(false);
-                      onNavigate('my-appointments');
-                    }}
-                    className={`w-full text-left px-3 py-2 flex items-center space-x-2 hover:bg-[#F5F1E8] ${
-                      role === 'customer' ? 'text-[#26352A] font-bold bg-[#E3E9DF]/50' : 'text-gray-700'
-                    }`}
-                  >
-                    <User className="w-3.5 h-3.5 text-[#26352A]" />
-                    <span>Customer (Kavya)</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      switchRole('staff');
-                      setRoleDropdownOpen(false);
-                      onNavigate('staff-dashboard');
-                    }}
-                    className={`w-full text-left px-3 py-2 flex items-center space-x-2 hover:bg-[#F5F1E8] ${
-                      role === 'staff' ? 'text-[#26352A] font-bold bg-[#E3E9DF]/50' : 'text-gray-700'
-                    }`}
-                  >
-                    <Briefcase className="w-3.5 h-3.5 text-[#26352A]" />
-                    <span>Staff (Ramesh Shetty)</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      switchRole('admin');
-                      setRoleDropdownOpen(false);
-                      onNavigate('admin-dashboard');
-                    }}
-                    className={`w-full text-left px-3 py-2 flex items-center space-x-2 hover:bg-[#F5F1E8] ${
-                      role === 'admin' ? 'text-[#26352A] font-bold bg-[#E3E9DF]/50' : 'text-gray-700'
-                    }`}
-                  >
-                    <Shield className="w-3.5 h-3.5 text-[#26352A]" />
-                    <span>Admin (Salon Director)</span>
-                  </button>
+            <div className="hidden lg:flex shrink-0 items-center gap-2">
+              <details className="relative">
+                <summary aria-label="Account menu" className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-2 text-sm text-[#53583A] hover:text-[#343923]">
+                  <UserRound className="h-4 w-4" /><span>Account</span><ChevronDown className="h-3.5 w-3.5" />
+                </summary>
+                <div className="absolute right-0 top-full z-50 mt-2 min-w-52 border border-[#53583A]/15 bg-[#F5F1E8] p-2 shadow-lg">
+                  {user && role === 'customer' && <button onClick={() => navigate('my-appointments')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>}
+                  {role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Portal</button>}
+                  {role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Panel</button>}
+                  {import.meta.env.DEV && <div className="mt-1 border-t border-[#53583A]/15 pt-1">
+                    <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-[#53583A]">Development role</p>
+                    {(['customer', 'staff', 'admin'] as const).map((demoRole) => <button key={demoRole} onClick={() => switchRole(demoRole)} className="block w-full px-3 py-1.5 text-left text-sm capitalize text-[#343923] hover:bg-[#DDE4D7]">{demoRole}</button>)}
+                  </div>}
+                  {user ? <button onClick={logout} className="mt-1 flex w-full items-center gap-2 border-t border-[#53583A]/15 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]"><LogOut className="h-3.5 w-3.5" />Sign out</button> : <button onClick={onOpenAuth} className="block w-full px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign in</button>}
                 </div>
-              )}
+              </details>
+              <button onClick={() => openBooking()} className="whitespace-nowrap bg-[#53583A] px-4 py-2.5 text-sm text-white transition-colors hover:bg-[#343923]">Book Appointment</button>
             </div>
-            </>}
 
-            {/* My Appointments / Dashboards */}
-            {role === 'customer' && (
-              <button
-                onClick={() => onNavigate('my-appointments')}
-                className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                  currentView === 'my-appointments'
-                    ? 'bg-[#26352A] text-white border-[#26352A]'
-                    : 'border-[#26352A]/30 text-[#26352A] hover:bg-[#26352A] hover:text-white'
-                }`}
-              >
-                My Bookings
+            <div className="flex shrink-0 items-center gap-2 lg:hidden">
+              <button onClick={() => openBooking()} aria-label="Book Appointment" className="whitespace-nowrap bg-[#53583A] px-3 py-2 text-xs sm:text-sm text-white hover:bg-[#343923]">Book</button>
+              <button onClick={() => setMobileMenuOpen((open) => !open)} aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileMenuOpen} className="p-2 text-[#343923] hover:bg-[#DDE4D7]">
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
-            )}
-
-            {role === 'staff' && (
-              <button
-                onClick={() => onNavigate('staff-dashboard')}
-                className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                  currentView === 'staff-dashboard'
-                    ? 'bg-[#26352A] text-white border-[#26352A]'
-                    : 'border-[#26352A] text-[#26352A] bg-white hover:bg-[#26352A] hover:text-white'
-                }`}
-              >
-                Staff Portal
-              </button>
-            )}
-
-            {role === 'admin' && (
-              <button
-                onClick={() => onNavigate('admin-dashboard')}
-                className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                  currentView === 'admin-dashboard'
-                    ? 'bg-[#26352A] text-white border-[#26352A]'
-                    : 'border-[#26352A] text-[#26352A] bg-white hover:bg-[#26352A] hover:text-white'
-                }`}
-              >
-                Admin Panel
-              </button>
-            )}
-
-            {user ? (
-              <button
-                onClick={logout}
-                className="p-2 text-gray-500 hover:text-red-700 transition-colors"
-                title={`Signed in as ${user.fullName}. Click to sign out.`}
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={onOpenAuth}
-                className="px-3 py-2 text-xs font-semibold rounded-lg text-[#26352A] hover:bg-[#E3E9DF]"
-              >
-                Sign In
-              </button>
-            )}
-
-            {/* Book Appointment CTA */}
-            <button
-              onClick={() => openBooking()}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-full bg-[#26352A] text-[#F5F1E8] hover:bg-[#19231C] active:scale-95 transition-all shadow-md text-xs sm:text-sm font-medium tracking-wide group"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#D8C9A7] group-hover:rotate-12 transition-transform" />
-              <span>Book Appointment</span>
-            </button>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="flex items-center space-x-2 sm:hidden">
-            <button
-              onClick={() => openBooking()}
-              className="px-3 py-1.5 rounded-full bg-[#26352A] text-[#F5F1E8] text-xs font-medium"
-            >
-              Book
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-[#26352A] hover:bg-[#E3E9DF]"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#F5F1E8] border-b border-[#D8C9A7]/40 px-4 pt-3 pb-6 space-y-3 shadow-xl">
-          <div className="grid grid-cols-2 gap-2 pb-3 border-b border-[#D8C9A7]/30">
-            {navLinks.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => {
-                  onNavigate(item.view, item.filter);
-                  setMobileMenuOpen(false);
-                }}
-                className={`text-left px-3 py-2 text-xs font-medium rounded-md ${
-                  currentView === item.view
-                    ? 'bg-[#26352A] text-white font-semibold'
-                    : 'text-[#26352A] hover:bg-[#E3E9DF]'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {import.meta.env.DEV && <>
-          {/* Development-only role switcher */}
-          <div className="space-y-2 pt-2">
-            <div className="text-[10px] tracking-wider uppercase font-bold text-gray-500">
-              Active Role: {role}
+        {mobileMenuOpen && <div className="border-t border-[#53583A]/15 bg-[#F5F1E8] px-4 py-4 lg:hidden">
+          <nav aria-label="Mobile navigation" className="mx-auto grid max-w-7xl grid-cols-2 gap-1">
+            <button onClick={() => navigate('home')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Home</button>
+            <div className="relative">
+              <button type="button" aria-expanded={mobileServicesOpen} aria-controls="mobile-services-menu" onClick={() => setMobileServicesOpen((open) => !open)} className="flex w-full items-center justify-between px-3 py-2 text-sm text-[#343923] hover:bg-[#DDE4D7]">Services <ChevronDown className="h-3.5 w-3.5" /></button>
+              {mobileServicesOpen && <div id="mobile-services-menu" className="col-span-2 pl-3" role="menu">
+                {serviceLinks.map((item) => <button role="menuitem" key={item.filter} onClick={() => navigate("services", item.filter)} className="block w-full px-3 py-2 text-left text-sm text-[#53583A] hover:bg-[#DDE4D7]">{item.label}</button>)}
+              </div>}
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  switchRole('customer');
-                  setMobileMenuOpen(false);
-                  onNavigate('my-appointments');
-                }}
-                className={`flex-1 py-1.5 text-xs rounded-md border text-center ${
-                  role === 'customer' ? 'bg-[#26352A] text-white' : 'border-[#26352A]/30 text-[#26352A]'
-                }`}
-              >
-                Customer
-              </button>
-              <button
-                onClick={() => {
-                  switchRole('staff');
-                  setMobileMenuOpen(false);
-                  onNavigate('staff-dashboard');
-                }}
-                className={`flex-1 py-1.5 text-xs rounded-md border text-center ${
-                  role === 'staff' ? 'bg-[#26352A] text-white' : 'border-[#26352A]/30 text-[#26352A]'
-                }`}
-              >
-                Staff
-              </button>
-              <button
-                onClick={() => {
-                  switchRole('admin');
-                  setMobileMenuOpen(false);
-                  onNavigate('admin-dashboard');
-                }}
-                className={`flex-1 py-1.5 text-xs rounded-md border text-center ${
-                  role === 'admin' ? 'bg-[#26352A] text-white' : 'border-[#26352A]/30 text-[#26352A]'
-                }`}
-              >
-                Admin
-              </button>
+            <button onClick={() => navigate('gallery')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Gallery</button>
+            <button onClick={() => navigate('about')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Our Story</button>
+            <button onClick={() => navigate('contact')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Contact</button>
+          </nav>
+          <details className="mx-auto mt-3 max-w-7xl border-t border-[#53583A]/15 pt-3">
+            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm text-[#343923]"><UserRound className="h-4 w-4" />Account <ChevronDown className="h-3.5 w-3.5" /></summary>
+            <div className="grid grid-cols-2 gap-1 px-3 pb-2">
+              {user && role === 'customer' && <button onClick={() => navigate('my-appointments')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>}
+              {role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Portal</button>}
+              {role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Panel</button>}
+              {user ? <button onClick={logout} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign out</button> : <button onClick={() => { onOpenAuth(); setMobileMenuOpen(false); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign in</button>}
+              {import.meta.env.DEV && <div className="col-span-2 border-t border-[#53583A]/15 pt-2">
+                <p className="px-3 py-1 text-[10px] uppercase tracking-wider text-[#53583A]">Development role</p>
+                <div className="flex flex-wrap gap-2 px-3">
+                  {(['customer', 'staff', 'admin'] as const).map((demoRole) => <button key={demoRole} onClick={() => switchRole(demoRole)} className="border border-[#53583A]/30 px-3 py-1.5 text-xs capitalize text-[#343923]">{demoRole}</button>)}
+                </div>
+              </div>}
             </div>
-          </div>
-          </>}
-        </div>
-      )}
-    </header>
+          </details>
+        </div>}      </header>
+    </>
   );
 };

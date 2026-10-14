@@ -14,7 +14,7 @@ export const TermsPolicyPage: React.FC = () => {
           Privacy Policy & Booking Terms
         </h1>
         <p className="text-xs text-gray-500">
-          Last updated: October 2026 • THE OASIS UNISEX SALON & SPA, Puttur
+          Last updated: October 2026 â€¢ THE OASIS UNISEX SALON & SPA, Puttur
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export const TermsPolicyPage: React.FC = () => {
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-gray-600">
             <li>
-              <strong>Punctuality:</strong> We kindly request guests to arrive 5–10 minutes prior
+              <strong>Punctuality:</strong> We kindly request guests to arrive 5â€“10 minutes prior
               to their scheduled time.
             </li>
             <li>
@@ -89,10 +89,7 @@ export const TermsPolicyPage: React.FC = () => {
               of any skin sensitivities, allergies, recent dermatological treatments, or pregnancy
               prior to beginning facials or body massages.
             </li>
-            <li>
-              <strong>Hygiene Protocol:</strong> Metal instruments are hospital-grade autoclaved.
-              Disposable items (wax strips, spatula, bed rolls, headbands) are strictly single-use.
-            </li>
+            <li>Please ask the salon team about the care steps used for your selected service.</li>
           </ul>
         </section>
 

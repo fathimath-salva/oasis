@@ -147,6 +147,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsSubmitting(true);
 
     try {
+      if (!user) {
+        throw new Error('Please sign in or create a customer account before confirming this appointment.');
+      }
       if (selectedServices.length === 0) {
         throw new Error('Please select at least one service.');
       }
@@ -161,10 +164,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const staffMember = selectedStaffId ? db.getStaffById(selectedStaffId) : undefined;
 
       const result = db.createAppointment({
-        customerId: user?.id || `guest-${Date.now()}`,
+        customerId: user.id,
         customerName: contact.fullName.trim(),
         customerPhone: contact.phone.trim(),
-        customerEmail: contact.email.trim() || 'customer@oasis-salon.in',
+        customerEmail: contact.email.trim() || user.email,
         staffId: selectedStaffId,
         staffName: staffMember?.name,
         appointmentDate: selectedDate,

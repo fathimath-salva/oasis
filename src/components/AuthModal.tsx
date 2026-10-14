@@ -31,6 +31,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     e.preventDefault();
     setError(null);
 
+    if (!import.meta.env.DEV) {
+      setError('Customer authentication is not configured yet. Please call the salon to arrange an appointment.');
+      return;
+    }
+
     if (mode === 'login') {
       if (!email.trim()) {
         setError('Please enter your email or staff username.');
@@ -77,7 +82,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             {mode === 'login' ? 'Welcome Back' : 'Create Customer Account'}
           </h3>
           <p className="text-xs text-[#E3E9DF]/80 mt-1">
-            Sign in to manage your appointments, booking history, and preferences.
+            Customer sign-in is required before confirming an appointment.
           </p>
         </div>
 

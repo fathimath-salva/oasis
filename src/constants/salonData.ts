@@ -8,7 +8,7 @@ import type {
 
 export const SALON_INFO = {
   name: 'THE OASIS UNISEX SALON & SPA',
-  tagline: 'Natural Luxury Haircare, Aesthetics & Rejuvenating Spa in Puttur',
+  tagline: 'Hair, beauty and spa services in Puttur',
   shortAddress: '2nd Floor, Providence Plaza, Yelmudi Bridge, Puttur',
   fullAddress: '2nd Floor, Providence Plaza, Main Road, Yelmudi Bridge, Puttur, D.K., Karnataka, India',
   phones: [
@@ -1505,7 +1505,7 @@ export const INITIAL_STAFF: StaffMember[] = [
   {
     id: 'stf-1',
     name: 'Ramesh Shetty',
-    title: 'Senior Hair Stylist & Barber',
+    title: 'Hair Stylist & Barber',
     phone: '9151550077',
     email: 'ramesh@oasis-salon.in',
     specialties: [
@@ -1525,7 +1525,7 @@ export const INITIAL_STAFF: StaffMember[] = [
   {
     id: 'stf-2',
     name: 'Ananya Rao',
-    title: 'Master Aesthetician & Skin Care Specialist',
+    title: 'Skin Care Specialist',
     phone: '7760451767',
     email: 'ananya@oasis-salon.in',
     specialties: [
@@ -1548,7 +1548,7 @@ export const INITIAL_STAFF: StaffMember[] = [
   {
     id: 'stf-3',
     name: 'Mohammed Irfan',
-    title: 'Senior Hair Colourist & Texture Artist',
+    title: 'Hair Colourist',
     phone: '9151550077',
     email: 'irfan@oasis-salon.in',
     specialties: [
@@ -1567,7 +1567,7 @@ export const INITIAL_STAFF: StaffMember[] = [
   {
     id: 'stf-4',
     name: 'Preethi D’Souza',
-    title: 'Certified Spa Therapist & Wellness Specialist',
+    title: 'Spa Therapist',
     phone: '7760451767',
     email: 'preethi@oasis-salon.in',
     specialties: [
@@ -1621,41 +1621,41 @@ export const GALLERY_ITEMS = [
     title: 'Serene Salon Interior',
     category: 'Ambience',
     imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80',
-    caption: 'Thoughtfully crafted natural luxury interior with sage green and warm ivory tones.',
+    caption: 'Illustrative salon interior inspiration, not a photograph of this salon.',
   },
   {
     id: 'gal-2',
     title: 'Precision Hair Styling Station',
     category: 'Hair',
     imageUrl: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1000&q=80',
-    caption: 'Modern ergonomic styling chairs and high-definition lighted mirrors.',
+    caption: 'Illustrative hair styling inspiration.',
   },
   {
     id: 'gal-3',
-    title: 'Rejuvenating Spa Suite',
+    title: 'Spa Treatments',
     category: 'Spa & Wellness',
     imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=80',
-    caption: 'Private soothing suites for Swedish and deep tissue body massage therapies.',
+    caption: 'Illustrative spa treatment inspiration.',
   },
   {
     id: 'gal-4',
     title: 'Korean Glass & Gold Facial Lounge',
     category: 'Facials & Skin',
     imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1000&q=80',
-    caption: 'Clinical hygiene with world-class skin rejuvenating masques and peel treatments.',
+    caption: 'Illustrative treatment inspiration.',
   },
   {
     id: 'gal-5',
     title: 'Keratin & Smoothening Results',
     category: 'Hair',
     imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=80',
-    caption: 'Silky, frizz-free transformation with glossy multi-tonal dimensional colour.',
+    caption: 'Illustrative hair treatment inspiration.',
   },
   {
     id: 'gal-6',
     title: 'Pedicure & Reflexology Lounge',
     category: 'Spa & Wellness',
     imageUrl: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1000&q=80',
-    caption: 'Aroma bubble foot spas with bubbling jet streams and heated paraffin therapy.',
+    caption: 'Illustrative pedicure inspiration.',
   },
 ];

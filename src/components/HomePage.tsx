@@ -1,19 +1,14 @@
-import React from 'react';
-import {
-  Sparkles,
-  ShieldCheck,
-  Star,
-  MapPin,
-  Clock,
-  Phone,
-  ArrowRight,
-  CheckCircle,
-  ExternalLink,
-} from 'lucide-react';
-import { InstagramIcon } from './InstagramIcon';
+﻿import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
-import { SALON_INFO, INITIAL_SERVICES, REVIEWS, GALLERY_ITEMS } from '../constants/salonData';
-import { formatINR, formatDuration } from '../lib/formatters';
+import { SALON_INFO, INITIAL_SERVICES, GALLERY_ITEMS } from '../constants/salonData';
+import { formatINR } from '../lib/formatters';
+
+const SERVICE_COLLECTIONS = [
+  { title: "Men's Services", filter: 'men', description: 'Haircuts, colour and grooming services for men.', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of a barbershop' },
+  { title: "Women's Services", filter: 'women', description: 'Hair, beauty and personal care services for women.', image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of hair styling' },
+  { title: 'Spa & Body Treatments', filter: 'spa', description: 'Explore the hair spa and body treatments in our catalogue.', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of a spa treatment room' },
+];
 
 interface HomePageProps {
   onNavigate: (view: string, filter?: string) => void;
@@ -29,7 +24,7 @@ const FEATURED_IMAGES: Record<string, string> = {
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { openBooking } = useBooking();
 
-  // Featured 4 curated services — selected by stable ID
+  // Featured 4 curated services Ã¢â‚¬â€ selected by stable ID
   const featuredServices = [
     'w-cut-4',    // Women's Advance Hair Cut (with Wash / Blow-Dry)
     'm-spa-m1',   // Men's Swedish Massage
@@ -44,190 +39,57 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     .filter(Boolean) as typeof INITIAL_SERVICES;
 
   return (
-    <div className="space-y-20 pb-20">
+    <div className="space-y-12 pb-14 sm:space-y-14">
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-[#26352A] text-[#F5F1E8] px-4 sm:px-6 lg:px-8 py-24">
-        {/* Ambient background image with luxury dark overlay */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity scale-105 transition-transform duration-1000"
-          style={{
-            backgroundImage:
-              'url(https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1800&q=80)',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#19231C] via-[#26352A]/85 to-[#26352A]/60" />
-
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
-          {/* Location badge */}
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#E3E9DF]/10 border border-[#D8C9A7]/30 text-xs sm:text-sm text-[#D8C9A7] backdrop-blur-sm">
-            <MapPin className="w-3.5 h-3.5 text-[#D8C9A7]" />
-            <span>Providence Plaza, Yelmudi Bridge, Puttur, Karnataka</span>
-          </div>
-
-          <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
-            A Sanctuary of <span className="italic text-[#D8C9A7] font-normal">Natural Luxury</span>{' '}
-            in Puttur
-          </h1>
-
-          <p className="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-[#E3E9DF]/80 font-light leading-relaxed">
-            Experience bespoke haircuts, organic botanical hair spas, European gold facials, and
-            rejuvenating body therapies tailored for discerning men and women.
-          </p>
-
-          {/* Action CTAs */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => openBooking()}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#D8C9A7] text-[#26352A] font-semibold text-sm sm:text-base tracking-wide hover:bg-[#FFFFFF] active:scale-95 transition-all shadow-xl flex items-center justify-center space-x-2 group"
-            >
-              <Sparkles className="w-4 h-4 text-[#26352A] group-hover:rotate-12 transition-transform" />
-              <span>Book Appointment</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate('services', 'all')}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-sm sm:text-base tracking-wide border border-[#D8C9A7]/30 backdrop-blur-sm transition-all flex items-center justify-center space-x-2"
-            >
-              <span>Explore Services</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Micro trust highlights */}
-          <div className="pt-8 border-t border-[#D8C9A7]/20 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-[#E3E9DF]/80">
-            <div className="flex items-center justify-center space-x-2">
-              <ShieldCheck className="w-4 h-4 text-[#D8C9A7]" />
-              <span>Hospital-Grade Sanitisation</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2">
-              <Sparkles className="w-4 h-4 text-[#D8C9A7]" />
-              <span>Premium Global Brands</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2">
-              <Clock className="w-4 h-4 text-[#D8C9A7]" />
-              <span>Open Daily: 9 AM - 8:30 PM</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2">
-              <Star className="w-4 h-4 text-[#D8C9A7] fill-current" />
-              <span>4.9★ Rated in Puttur</span>
+      <section className="bg-[#F5F1E8] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="max-w-xl space-y-5">
+            <p className="text-xs font-medium tracking-wide text-[#53583A] sm:text-sm">Providence Plaza, Yelmudi Bridge, Puttur</p>
+            <h1 className="font-serif text-4xl leading-tight text-[#343923] sm:text-5xl lg:text-6xl">Take a little time for yourself</h1>
+            <p className="max-w-lg text-sm leading-7 text-[#53583A] sm:text-base">Haircuts, facials, hair spa and body treatments for men and women. Come in, relax and let us take care of you.</p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button onClick={() => openBooking()} className="bg-[#53583A] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#343923]">Book Appointment</button>
+              <button onClick={() => onNavigate('services', 'all')} className="border border-[#53583A]/40 px-6 py-3 text-sm font-medium text-[#343923] transition-colors hover:bg-[#EEE7DA]">View Services</button>
             </div>
           </div>
+          <figure className="relative min-w-0">
+            <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1400&q=85" alt="Illustrative salon interior with natural light" className="aspect-[4/3] w-full object-cover" />
+            <figcaption className="absolute bottom-3 left-3 bg-[#F5F1E8]/90 px-3 py-1.5 text-[10px] text-[#343923]">Illustrative image</figcaption>
+            <span className="absolute -right-2 -top-2 -z-0 h-20 w-20 border-r-4 border-t-4 border-[#C98C6B] sm:-right-4 sm:-top-4 sm:h-28 sm:w-28" aria-hidden="true" />
+          </figure>
+        </div>
+        <div className="mx-auto mt-10 grid max-w-7xl grid-cols-1 gap-3 border-t border-[#53583A]/20 pt-5 text-sm text-[#343923] sm:grid-cols-3 sm:gap-6">
+          <p className="text-center sm:text-left">Services for men and women</p>
+          <p className="text-center sm:text-left">Providence Plaza, Puttur</p>
+          <a className="text-center underline underline-offset-4 hover:text-[#53583A] sm:text-left" href={`tel:${SALON_INFO.phones[0].raw}`}>Call 9151550077</a>
         </div>
       </section>
-
-      {/* 2. MEN'S AND WOMEN'S SERVICE CATEGORY SHOWCASE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-2 mb-10">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
-            Tailored Excellence
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#26352A]">
-            Curated Services for Men & Women
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-600 max-w-xl mx-auto">
-            Distinctive service menus designed specifically for modern grooming, therapeutic skin
-            restoration, and holistic wellness.
-          </p>
+      {/* 2. SERVICE COLLECTIONS */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 max-w-xl">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#53583A]">Our services</p>
+          <h2 className="mt-2 font-serif text-3xl text-[#343923] sm:text-4xl">Choose what feels right for you</h2>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Men's Card */}
-          <div
-            onClick={() => onNavigate('services', 'men')}
-            className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer h-96 bg-[#26352A] flex flex-col justify-end p-8"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80"
-              alt="Illustrative image for men's salon services"
-              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-75 transition-all duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#19231C] via-[#19231C]/60 to-transparent" />
-            <div className="relative z-10 space-y-2 text-white">
-              <span className="text-[10px] tracking-[0.2em] font-semibold text-[#D8C9A7] uppercase">
-                Grooming & Hair
-              </span>
-              <h3 className="font-serif text-2xl font-bold text-white">Men's Catalogue</h3>
-              <p className="text-xs text-[#E3E9DF]/80 line-clamp-2">
-                Precision fades, beard sculpts, detox facials, grey blending, and head champi.
-              </p>
-              <div className="pt-2 flex items-center space-x-1 text-xs font-semibold text-[#D8C9A7] group-hover:text-white transition-colors">
-                <span>View Men's Menu</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </div>
-
-          {/* Women's Card */}
-          <div
-            onClick={() => onNavigate('services', 'women')}
-            className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer h-96 bg-[#26352A] flex flex-col justify-end p-8"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=800&q=80"
-              alt="Illustrative image for women's hair and beauty services"
-              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-75 transition-all duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#19231C] via-[#19231C]/60 to-transparent" />
-            <div className="relative z-10 space-y-2 text-white">
-              <span className="text-[10px] tracking-[0.2em] font-semibold text-[#D8C9A7] uppercase">
-                Couture & Aesthetics
-              </span>
-              <h3 className="font-serif text-2xl font-bold text-white">Women's Catalogue</h3>
-              <p className="text-xs text-[#E3E9DF]/80 line-clamp-2">
-                Layered haircuts, balayage, keratin smoothing, bridal radiance facials, and waxing.
-              </p>
-              <div className="pt-2 flex items-center space-x-1 text-xs font-semibold text-[#D8C9A7] group-hover:text-white transition-colors">
-                <span>View Women's Menu</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </div>
-
-          {/* Spa & Body Card */}
-          <div
-            onClick={() => onNavigate('services', 'spa')}
-            className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer h-96 bg-[#26352A] flex flex-col justify-end p-8"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
-              alt="Spa and Body Treatments Puttur"
-              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-75 transition-all duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#19231C] via-[#19231C]/60 to-transparent" />
-            <div className="relative z-10 space-y-2 text-white">
-              <span className="text-[10px] tracking-[0.2em] font-semibold text-[#D8C9A7] uppercase">
-                Holistic Relaxation
-              </span>
-              <h3 className="font-serif text-2xl font-bold text-white">Spa & Body Wellness</h3>
-              <p className="text-xs text-[#E3E9DF]/80 line-clamp-2">
-                Swedish massage, deep tissue therapy, heated paraffin pedicures, and body polishing.
-              </p>
-              <div className="pt-2 flex items-center space-x-1 text-xs font-semibold text-[#D8C9A7] group-hover:text-white transition-colors">
-                <span>View Spa Menu</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {SERVICE_COLLECTIONS.map((collection, index) => <article key={collection.filter} className={`overflow-hidden border border-[#53583A]/15 bg-white ${index === 2 ? 'sm:col-span-2 lg:col-span-1' : ''}`}>
+            <div className="relative"><img src={collection.image} alt={collection.alt} className="h-48 w-full object-cover" /><span className="absolute left-3 top-3 bg-[#F5F1E8]/90 px-2.5 py-1 text-[10px] text-[#343923]">Illustrative image</span></div>
+            <div className="p-5"><h3 className="font-serif text-2xl text-[#343923]">{collection.title}</h3><p className="mt-2 text-sm leading-6 text-[#53583A]">{collection.description}</p><button onClick={() => onNavigate('services', collection.filter)} className="mt-4 text-sm font-medium text-[#53583A] underline underline-offset-4">Explore services <ArrowRight className="ml-1 inline h-4 w-4" /></button></div>
+          </article>)}
         </div>
       </section>
-
       {/* 3. FEATURED SERVICES */}
-      <section className="bg-[#E3E9DF]/50 py-16 border-y border-[#D8C9A7]/30">
+      <section className="bg-[#DDE4D7]/50 py-16 border-y border-[#A8B7A0]/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
-                Client Favorites
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#26352A]">
-                Signature Rituals
-              </h2>
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#53583A]">Explore the catalogue</span>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#343923]">Popular Services</h2>
             </div>
             <button
               onClick={() => onNavigate('services', 'all')}
-              className="inline-flex items-center space-x-1 text-xs font-semibold text-[#26352A] hover:text-[#76603F] transition-colors"
+              className="inline-flex items-center space-x-1 text-xs font-semibold text-[#343923] hover:text-[#53583A] transition-colors"
             >
-              <span>View All 20+ Services</span>
+              <span>View all services</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -236,42 +98,41 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             {featuredServices.map((service) => (
               <div
                 key={service.id}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#D8C9A7]/40 hover:shadow-md transition-all flex flex-col justify-between group"
+                className="bg-white border-b border-[#53583A]/20 transition-colors flex flex-col justify-between group"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
                     src={service.imageUrl}
-                    alt={service.name}
+                    alt={`Illustrative colour photo for ${service.category.toLowerCase()}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3 bg-[#26352A]/85 backdrop-blur-xs text-[#D8C9A7] text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full">
+                  <div className="absolute top-3 left-3 bg-[#F5F1E8]/90 text-[#343923] text-[10px] uppercase font-bold tracking-wider px-2.5 py-1">
                     {service.gender === 'unisex' ? 'Unisex' : `${service.gender}'s`}
                   </div>
                 </div>
 
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div>
-                    <h3 className="font-serif text-base font-bold text-[#26352A] leading-snug">
+                    <h3 className="font-serif text-base font-bold text-[#343923] leading-snug">
                       {service.name}
                     </h3>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{service.description}</p>
+                    <p className="mt-2 text-[10px] text-[#53583A]">Illustrative image</p>
                   </div>
 
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] text-gray-400 block">
-                        {formatDuration(service.durationMinutes)}
-                      </span>
-                      <span className="text-base font-bold text-[#26352A]">
-                        {formatINR(service.price)}
+                      <span className="text-base font-medium text-[#343923]">
+                        {service.priceConfirmed && !service.requiresConfirmation ? formatINR(service.price) : 'Price to be confirmed'}
                       </span>
                     </div>
 
                     <button
                       onClick={() => openBooking(service)}
-                      className="px-3.5 py-2 rounded-xl bg-[#26352A] text-white text-xs font-semibold hover:bg-[#19231C] active:scale-95 transition-all shadow-xs"
+                      disabled={!service.priceConfirmed || service.requiresConfirmation}
+                      className="px-3.5 py-2 bg-[#53583A] text-white text-xs font-medium hover:bg-[#343923] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Book Now
+                      View Details
                     </button>
                   </div>
                 </div>
@@ -281,157 +142,35 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* 4. WHY CHOOSE US */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
-                The Oasis Standard
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#26352A] mt-1">
-                Refined Craftsmanship, Elevated Hygiene
-              </h2>
-            </div>
-
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Conveniently located on the 2nd Floor of Providence Plaza by Yelmudi Bridge, THE OASIS
-              was established to offer Puttur a truly elevated salon & spa experience without
-              compromising on product integrity, privacy, or comfort.
-            </p>
-
-            <div className="space-y-3.5">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-[#26352A] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs font-bold text-[#26352A]">Authentic Salon Formulations</h4>
-                  <p className="text-xs text-gray-500">
-                    We use only verified professional brands like L’Oréal Professionnel, Casmara Spain,
-                    and cold-pressed botanical oils.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-[#26352A] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs font-bold text-[#26352A]">Hospital-Grade Hygiene</h4>
-                  <p className="text-xs text-gray-500">
-                    All metal scissors, razors, and nail nippers are sterilised after every service.
-                    Freshly laundered or single-use disposable towels are standard.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-[#26352A] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs font-bold text-[#26352A]">Transparent, Honest Pricing</h4>
-                  <p className="text-xs text-gray-500">
-                    No hidden add-on costs or aggressive upselling. All service prices and durations
-                    are clearly communicated upfront.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button
-                onClick={() => onNavigate('about')}
-                className="px-6 py-3 rounded-full border border-[#26352A] text-[#26352A] font-semibold text-xs hover:bg-[#26352A] hover:text-white transition-all"
-              >
-                Read Our Story & Standards
-              </button>
-            </div>
+      {/* 4. THE OASIS STORY */}
+      <section className="bg-[#EEE7DA] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-2 lg:gap-14">
+          <div className="max-w-xl">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#53583A]">Our Story</p>
+            <h2 className="mt-2 font-serif text-3xl text-[#343923] sm:text-4xl">The OASIS Story</h2>
+            <p className="mt-4 text-sm leading-7 text-[#53583A]">Welcome to THE OASIS UNISEX SALON & SPA - a place to take a little time for yourself. Explore hair, beauty and spa services in a comfortable setting, with a focus on personal care and helping you feel your best. We look forward to welcoming you.</p>
+            <button onClick={() => onNavigate('about')} className="mt-5 text-sm font-medium text-[#343923] underline underline-offset-4">Our Story</button>
           </div>
-
-          <div className="relative">
-            <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
-              <img
-                src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80"
-                alt="The Oasis Unisex Salon Ambience"
-                className="w-full h-[450px] object-cover"
-              />
-            </div>
-            {/* Overlay trust floating card */}
-            <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-xl border border-[#D8C9A7]/40 max-w-xs hidden sm:block">
-              <div className="flex items-center space-x-2 text-amber-500">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-current" />
-                ))}
-              </div>
-              <p className="text-xs font-bold text-[#26352A] mt-1">
-                Puttur’s Premier Unisex Salon
-              </p>
-              <p className="text-[11px] text-gray-500">
-                Ranked #1 for tranquil ambience and styling excellence.
-              </p>
-            </div>
-          </div>
+          <figure className="relative">
+            <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=85" alt="Illustrative spa treatment room" className="aspect-[4/3] w-full object-cover" />
+            <figcaption className="absolute bottom-3 left-3 bg-[#F5F1E8]/90 px-3 py-1.5 text-[10px] text-[#343923]">Illustrative image</figcaption>
+          </figure>
         </div>
       </section>
-
-      {/* 5. GENUINE CUSTOMER REVIEWS */}
-      <section className="bg-[#26352A] text-[#F5F1E8] py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-2 mb-12">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#D8C9A7]">
-              Client Testimonials
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white">
-              What Our Guests in Puttur Say
-            </h2>
-            <p className="text-xs sm:text-sm text-[#E3E9DF]/80 max-w-lg mx-auto">
-              Real feedback from guests who trust us with their hair, skin, and wellness.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {REVIEWS.map((review) => (
-              <div
-                key={review.id}
-                className="bg-[#19231C]/80 rounded-2xl p-6 border border-[#D8C9A7]/20 flex flex-col justify-between space-y-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-1 text-amber-400">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-[#E3E9DF] italic leading-relaxed">
-                    "{review.text}"
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-[#344839] flex items-center justify-between text-xs">
-                  <div>
-                    <h4 className="font-bold text-white">{review.author}</h4>
-                    <span className="text-[10px] text-[#A8B7A0]">{review.location}</span>
-                  </div>
-                  <span className="text-[10px] bg-[#344839] text-[#D8C9A7] px-2 py-0.5 rounded">
-                    {review.service}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* 6. GALLERY PREVIEW */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#53583A]">
               Visual Tour
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#26352A]">
-              Inside The Oasis
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#343923]">
+              Treatment inspiration
             </h2>
           </div>
           <button
             onClick={() => onNavigate('gallery')}
-            className="inline-flex items-center space-x-1 text-xs font-semibold text-[#26352A] hover:text-[#76603F] transition-colors"
+            className="inline-flex items-center space-x-1 text-xs font-semibold text-[#343923] hover:text-[#53583A] transition-colors"
           >
             <span>Explore Full Gallery</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -447,11 +186,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             >
               <img
                 src={item.imageUrl}
-                alt={item.title}
+                alt={`Illustrative ${item.category.toLowerCase()} image`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
+              <div className="absolute bottom-2 left-2 bg-[#F5F1E8]/90 px-2 py-1 text-[10px] text-[#343923]">Illustrative image</div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                <span className="text-[10px] uppercase tracking-wider text-[#D8C9A7] font-semibold">
+                <span className="text-[10px] uppercase tracking-wider text-[#A8B7A0] font-semibold">
                   {item.category}
                 </span>
                 <p className="text-xs font-bold text-white">{item.title}</p>
@@ -461,95 +201,23 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* 7. SALON LOCATION & CONTACT BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-xl border border-[#D8C9A7]/50 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div className="space-y-6">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#76603F]">
-                Visit Us in Puttur
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#26352A] mt-1">
-                Easy to Reach at Providence Plaza
-              </h2>
-            </div>
-
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Located on the 2nd floor with convenient elevator access, ample parking, and tranquil
-              interiors overlooking the Yelmudi area.
-            </p>
-
-            <div className="space-y-3 text-xs">
-              <div className="flex items-start space-x-3">
-                <MapPin className="w-4 h-4 text-[#76603F] shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-[#26352A]">2nd Floor, Providence Plaza</p>
-                  <p className="text-gray-500">Main Road, Yelmudi Bridge, Puttur, D.K., Karnataka</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <Clock className="w-4 h-4 text-[#76603F] shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-[#26352A]">Operating Schedule</p>
-                  <p className="text-gray-500">Open 7 Days a Week: 09:00 AM – 08:30 PM</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <Phone className="w-4 h-4 text-[#76603F] shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-[#26352A]">Phone Bookings & Enquiries</p>
-                  <div className="flex items-center space-x-3 mt-1">
-                    {SALON_INFO.phones.map((p) => (
-                      <a
-                        key={p.raw}
-                        href={`tel:${p.raw}`}
-                        className="text-[#26352A] font-semibold hover:text-[#76603F] underline"
-                      >
-                        {p.display}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex flex-wrap gap-3">
-              <a
-                href={SALON_INFO.googleMaps.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-full bg-[#26352A] text-white text-xs font-semibold hover:bg-[#19231C] inline-flex items-center space-x-2 shadow-sm"
-              >
-                <span>Get Google Maps Directions</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-
-              <a
-                href={SALON_INFO.instagram.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-full border border-[#26352A]/40 text-[#26352A] text-xs font-semibold hover:bg-[#E3E9DF] inline-flex items-center space-x-2"
-              >
-                <InstagramIcon className="w-3.5 h-3.5" />
-                <span>{SALON_INFO.instagram.handle}</span>
-              </a>
-            </div>
+      {/* 7. SALON LOCATION & CONTACT */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-6 border-y border-[#53583A]/20 py-8 md:grid-cols-3 md:items-center">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#53583A]">Visit us</p>
+            <h2 className="mt-2 font-serif text-3xl text-[#343923]">Find THE OASIS</h2>
+            <p className="mt-4 text-sm leading-6 text-[#53583A]">2nd Floor, Providence Plaza<br />Main Road, Yelmudi Bridge<br />Puttur, D.K., Karnataka, India</p>
+            <p className="mt-3 text-sm leading-6 text-[#53583A]">Call, message, or get directions to plan your visit.</p>
           </div>
-
-          {/* Embedded Google Map iframe */}
-          <div className="rounded-2xl overflow-hidden h-[340px] border border-[#D8C9A7] shadow-inner bg-gray-100">
-            <iframe
-              title="The Oasis Salon Location"
-              src={SALON_INFO.googleMaps.embedUrl}
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen={false}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+          <figure className="relative">
+            <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80" alt="Illustrative colour photo of a salon interior" className="aspect-[16/10] w-full object-cover" />
+            <figcaption className="absolute bottom-2 left-2 bg-[#F5F1E8]/90 px-2 py-1 text-[10px] text-[#343923]">Illustrative image</figcaption>
+          </figure>
+          <div className="flex flex-wrap gap-3 md:justify-end">
+            {SALON_INFO.phones.map((phone) => <a key={phone.raw} href={`tel:${phone.raw}`} className="border border-[#53583A]/35 px-4 py-2.5 text-sm text-[#343923] hover:bg-[#EEE7DA]">Call {phone.display}</a>)}
+            <a href={SALON_INFO.googleMaps.url} target="_blank" rel="noopener noreferrer" className="bg-[#53583A] px-4 py-2.5 text-sm text-white hover:bg-[#343923]">Get Directions</a>
+            <button onClick={() => onNavigate('contact')} className="border border-[#53583A]/35 px-4 py-2.5 text-sm text-[#343923] hover:bg-[#EEE7DA]">Contact details</button>
           </div>
         </div>
       </section>
