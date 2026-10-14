@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-oasis-sage: #A8B7A0;
+  --color-oasis-ivory: #F5F1E8;
+  --color-oasis-eucalyptus: #E3E9DF;
+  --color-oasis-gold: #D8C9A7;
+  --color-oasis-forest: #26352A;
+  --color-oasis-forest-dark: #19231C;
+  --color-oasis-forest-light: #36483B;
+  --color-oasis-sand: #EDE7DC;
+
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-oasis-ivory);
+    color: var(--color-oasis-forest);
+  }
+
+  h1, h2, h3, .font-serif-luxury {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom luxury scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F1E8;
+}
+::-webkit-scrollbar-thumb {
+  background: #A8B7A0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #26352A;
+}
+
+/* Glassmorphism & subtle luxury styling */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(216, 201, 167, 0.35);
+}
+
+.glass-panel-dark {
+  background: rgba(26, 35, 28, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(216, 201, 167, 0.2);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #26352A 0%, #76603F 50%, #D8C9A7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border {
+  border-color: rgba(216, 201, 167, 0.4);
+}
