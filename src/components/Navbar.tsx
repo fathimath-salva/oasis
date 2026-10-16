@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
 
   return (
     <>
-      <div className="bg-[#343923] text-[#F5F1E8] px-4 sm:px-6 lg:px-8 py-2 text-[11px]">
+      <div className="bg-[#151412] text-[#E9DFCA] px-4 sm:px-6 lg:px-8 py-2 text-[11px] tracking-wide">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
           <span>Providence Plaza, Yelmudi Bridge, Puttur</span>
           <div className="flex items-center gap-4">
@@ -85,12 +85,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
         </div>
       </div>
 
-      <header ref={servicesMenuRef} className="sticky top-0 z-50 border-b border-[#53583A]/15 bg-[#F5F1E8]/95 backdrop-blur">
+      <header ref={servicesMenuRef} className="sticky top-0 z-50 border-b border-[#C6AA76]/30 bg-[#F7F3EB]/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="min-h-[72px] flex items-center justify-between gap-3">
             <button onClick={() => navigate('home')} className="min-w-0 shrink-0 text-left leading-none" aria-label="THE OASIS UNISEX SALON & SPA home">
-              <span className="block whitespace-nowrap font-serif text-[21px] sm:text-2xl tracking-[0.12em] text-[#343923]">THE OASIS</span>
-              <span className="mt-1 block whitespace-nowrap text-[8px] sm:text-[9px] tracking-[0.16em] text-[#53583A]">UNISEX SALON & SPA | PUTTUR</span>
+              <img src="/images/oasis-logo.jpg" alt="THE OASIS — UNISEX SALON & SPA" width="1450" height="660" className="h-auto w-[142px] object-contain sm:w-[158px]" />
             </button>
             <nav aria-label="Main navigation" className="hidden lg:flex items-center justify-center gap-1 xl:gap-3 min-w-0">
               <button onClick={() => navigate('home')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'home' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Home</button>

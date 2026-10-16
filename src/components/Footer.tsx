@@ -14,19 +14,12 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTeamLogin }) => {
   return (
-    <footer className="bg-[#343923] text-[#F5F1E8] border-t border-[#A8B7A0]/20 pt-16 pb-12">
+    <footer className="oasis-footer bg-[#151412] text-[#F5F1E8] border-t border-[#C6AA76]/25 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-[#A8B7A0]/20">
           {/* Col 1: Brand & Philosophy */}
           <div className="space-y-4">
-            <div className="flex flex-col items-start">
-              <span className="text-2xl font-serif tracking-[0.2em] font-semibold text-[#FFFFFF]">
-                THE OASIS
-              </span>
-              <span className="text-[10px] tracking-[0.25em] text-[#A8B7A0] font-medium uppercase mt-0.5">
-                UNISEX SALON & SPA • PUTTUR
-              </span>
-            </div>
+            <img src="/images/oasis-logo.jpg" alt="THE OASIS — UNISEX SALON & SPA" width="1450" height="660" className="h-16 w-auto max-w-[230px] object-contain" loading="lazy" />
             <p className="text-xs text-[#DDE4D7]/80 leading-relaxed">Hair, beauty and spa services in a comfortable setting in Puttur.</p>
             <div className="pt-2">
               <a
