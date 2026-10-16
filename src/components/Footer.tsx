@@ -9,13 +9,14 @@ import { SALON_INFO } from '../constants/salonData';
 
 interface FooterProps {
   onNavigate: (view: string, filter?: string) => void;
+  onOpenTeamLogin: (role: 'admin' | 'staff') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTeamLogin }) => {
   return (
     <footer className="bg-[#343923] text-[#F5F1E8] border-t border-[#A8B7A0]/20 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-12 border-b border-[#A8B7A0]/20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-[#A8B7A0]/20">
           {/* Col 1: Brand & Philosophy */}
           <div className="space-y-4">
             <div className="flex flex-col items-start">
@@ -23,7 +24,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 THE OASIS
               </span>
               <span className="text-[10px] tracking-[0.25em] text-[#A8B7A0] font-medium uppercase mt-0.5">
-                UNISEX SALON & SPA â€¢ PUTTUR
+                UNISEX SALON & SPA • PUTTUR
               </span>
             </div>
             <p className="text-xs text-[#DDE4D7]/80 leading-relaxed">Hair, beauty and spa services in a comfortable setting in Puttur.</p>
@@ -98,6 +99,19 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </ul>
           </div>
 
+          {/* Team Access and sample-only previews */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-[#A8B7A0]">Team Access</h4>
+            <button type="button" onClick={() => onOpenTeamLogin('admin')} className="block text-left text-xs text-[#DDE4D7]/90 hover:text-white transition-colors">Admin Login</button>
+            <button type="button" onClick={() => onOpenTeamLogin('staff')} className="block text-left text-xs text-[#DDE4D7]/90 hover:text-white transition-colors">Staff Login</button>
+            <div className="border-t border-[#A8B7A0]/20 pt-3">
+              <p className="mb-2 text-[10px] uppercase tracking-wider text-[#A8B7A0]">Sample-only previews</p>
+              <button type="button" onClick={() => onNavigate('demo-admin')} className="mb-2 block text-left text-xs text-[#DDE4D7]/90 hover:text-white transition-colors">Preview Admin Dashboard</button>
+              <button type="button" onClick={() => onNavigate('demo-staff')} className="block text-left text-xs text-[#DDE4D7]/90 hover:text-white transition-colors">Preview Staff Dashboard</button>
+              <p className="mt-2 text-[10px] leading-4 text-[#DDE4D7]/60">Demo dashboards use fictional sample data and do not grant staff access.</p>
+            </div>
+          </div>
+
           {/* Col 4: Address & Phone Links */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold tracking-wider uppercase text-[#A8B7A0]">
@@ -143,22 +157,22 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
         {/* Bottom copyright and legal */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#A8B7A0] gap-4">
-          <p>Â© {new Date().getFullYear()} THE OASIS UNISEX SALON & SPA. All rights reserved.</p>
-          <div className="flex items-center space-x-6 text-xs">
+          <p>© {new Date().getFullYear()} THE OASIS UNISEX SALON & SPA. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center text-xs sm:justify-start sm:gap-x-6">
             <button
               onClick={() => onNavigate('terms')}
               className="hover:text-white transition-colors"
             >
               Privacy Policy & Booking Terms
             </button>
-            <span>â€¢</span>
+            <span>•</span>
             <button
               onClick={() => onNavigate('about')}
               className="hover:text-white transition-colors"
             >
               About Us
             </button>
-            <span>â€¢</span>
+            <span>•</span>
             <button
               onClick={() => onNavigate('contact')}
               className="hover:text-white transition-colors"

@@ -9,16 +9,11 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
-import { useAuth } from '../context/AuthContext';
-import { db } from '../lib/db';
 import { formatINR, formatDuration, formatTime12Hour, formatDateWithWeekday, formatServicePrice } from '../lib/formatters';
+import { isFixedPriceService } from '../lib/serviceMapper';
+import { DemoBookingPreview } from './DemoBookingPreview';
 
-interface BookingModalProps {
-  onNavigateToAppointments?: () => void;
-  onRequireSignIn?: () => void;
-}
-
-export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointments, onRequireSignIn }) => {
+export const BookingModal: React.FC = () => {
   const {
     isOpen,
     closeBooking,
@@ -26,30 +21,27 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
     setStep,
     selectedServices,
     toggleService,
+    services,
+    catalogueLoading,
+    catalogueError,
     totalPrice,
     totalDuration,
-    selectedStaffId,
-    setSelectedStaffId,
     selectedDate,
     setSelectedDate,
     selectedSlot,
     setSelectedSlot,
     availableSlots,
+    availabilityLoading,
+    availabilityError,
     contact,
     setContact,
-    submitBooking,
-    isSubmitting,
     error,
-    lastConfirmedAppointment,
-    resetBooking,
   } = useBooking();
-  const { user } = useAuth();
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'men' | 'women' | 'unisex'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const allServices = useMemo(() => db.getServices().filter((s) => s.isActive), [isOpen]);
-  const staffList = useMemo(() => db.getStaff().filter((s) => s.isActive), [isOpen]);
+  const allServices = services;
 
   const filteredServices = useMemo(() => {
     return allServices.filter((s) => {
@@ -65,8 +57,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fade-in">
-      <div className="relative w-full max-w-4xl bg-[#F5F1E8] rounded-2xl shadow-2xl border border-[#D8C9A7]/50 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-6 animate-fade-in">
+      <div className="relative w-full max-w-4xl bg-[#F5F1E8] rounded-2xl shadow-2xl border border-[#D8C9A7]/50 overflow-hidden flex flex-col max-h-[92dvh]">
         {/* Modal Header */}
         <div className="bg-[#26352A] text-[#F5F1E8] px-6 py-4 flex items-center justify-between border-b border-[#D8C9A7]/30">
           <div className="flex items-center space-x-3">
@@ -82,23 +74,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
             onClick={() => {
               closeBooking();
             }}
-            className="p-1.5 rounded-full text-[#E3E9DF] hover:bg-[#344839] hover:text-white transition-colors"
+            className="min-h-11 min-w-11 p-1.5 rounded-full text-[#E3E9DF] hover:bg-[#344839] hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Progress Bar (Steps 1 to 4) */}
-        {step < 5 && (
+        {step <= 4 && (
           <div className="bg-[#E3E9DF]/70 px-6 py-3 border-b border-[#D8C9A7]/30">
-            <div className="flex items-center justify-between max-w-2xl mx-auto text-xs font-medium text-[#26352A]">
+            <div role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step} aria-valuetext={`Step ${step} of 4: ${['Select Services', 'Date & Time', 'Contact Details', 'Review'][step - 1]}`} className="flex items-center justify-between max-w-2xl mx-auto text-xs font-medium text-[#26352A]">
               <div
                 className={`flex items-center space-x-1.5 ${step >= 1 ? 'font-bold text-[#26352A]' : 'opacity-50'}`}
               >
                 <span className="w-5 h-5 rounded-full bg-[#26352A] text-white flex items-center justify-center text-[10px]">
                   1
                 </span>
-                <span>Select Services</span>
+                <span className="hidden sm:inline">Select Services</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
               <div
@@ -107,7 +99,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                 <span className="w-5 h-5 rounded-full bg-[#26352A] text-white flex items-center justify-center text-[10px]">
                   2
                 </span>
-                <span>Date & Time</span>
+                <span className="hidden sm:inline">Date & Time</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
               <div
@@ -116,7 +108,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                 <span className="w-5 h-5 rounded-full bg-[#26352A] text-white flex items-center justify-center text-[10px]">
                   3
                 </span>
-                <span>Stylist & Details</span>
+                <span className="hidden sm:inline">Contact Details</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
               <div
@@ -125,7 +117,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                 <span className="w-5 h-5 rounded-full bg-[#26352A] text-white flex items-center justify-center text-[10px]">
                   4
                 </span>
-                <span>Review</span>
+                <span className="hidden sm:inline">Review</span>
               </div>
             </div>
           </div>
@@ -140,9 +132,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
             </div>
           )}
 
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs text-amber-900" role="status">
+            Live catalogue and availability are read-only in this stage. Booking confirmation is disabled until the salon verifies staff qualifications for each service.
+          </div>
+
           {/* STEP 1: SELECT SERVICES */}
           {step === 1 && (
             <div className="space-y-4">
+              {catalogueLoading && <p className="rounded-xl bg-white p-4 text-xs text-[#53583A]" role="status">Loading the live service catalogue…</p>}
+              {catalogueError && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-800" role="alert">{catalogueError}</p>}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 {/* Gender pills */}
                 <div className="flex items-center space-x-1.5 bg-[#E3E9DF] p-1 rounded-lg">
@@ -167,7 +165,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                   placeholder="Search haircut, facial, keratin..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-3.5 py-1.5 text-xs rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A] w-full sm:w-64"
+                  className="px-3.5 py-1.5 text-base sm:text-sm rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A] w-full sm:w-64"
                 />
               </div>
 
@@ -175,16 +173,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[46vh] overflow-y-auto pr-1">
                 {filteredServices.map((service) => {
                   const isSelected = selectedServices.some((s) => s.id === service.id);
+                  const isBookable = isFixedPriceService(service);
                   return (
                     <div
                       key={service.id}
                       onClick={() => {
-                        if (service.priceConfirmed && !service.requiresConfirmation) {
+                        if (isBookable) {
                           toggleService(service);
                         }
                       }}
                       className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
-                        !service.priceConfirmed || service.requiresConfirmation
+                        !isBookable
                           ? 'opacity-60 cursor-not-allowed bg-gray-50 border-gray-200'
                           : isSelected
                           ? 'border-[#26352A] bg-white ring-2 ring-[#26352A]/20 shadow-sm cursor-pointer'
@@ -229,7 +228,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                           <span>{formatDuration(service.durationMinutes)}</span>
                         </span>
                         <div className="flex items-center space-x-2">
-                          {!service.priceConfirmed || service.requiresConfirmation ? (
+                          {!isBookable ? (
                             <span className="text-[9px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium">
                               Requires Confirmation
                             </span>
@@ -245,7 +244,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                 })}
               </div>
 
-              {filteredServices.length === 0 && (
+              {!catalogueLoading && !catalogueError && filteredServices.length === 0 && (
                 <div className="text-center py-8 text-xs text-gray-500">
                   No services found matching your filter.
                 </div>
@@ -270,7 +269,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                       setSelectedDate(e.target.value);
                       setSelectedSlot('');
                     }}
-                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#D8C9A7] bg-white focus:outline-none focus:ring-2 focus:ring-[#26352A]/20"
+                    className="w-full px-4 py-2.5 text-base sm:text-sm rounded-xl border border-[#D8C9A7] bg-white focus:outline-none focus:ring-2 focus:ring-[#26352A]/20"
                   />
                   <div className="p-3 bg-[#E3E9DF]/60 rounded-xl text-xs space-y-1 text-[#26352A]/80">
                     <p className="font-semibold text-[#26352A]">
@@ -288,7 +287,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                   <label className="block text-xs font-semibold text-[#26352A] uppercase tracking-wider">
                     2. Available Time Slots ({availableSlots.length})
                   </label>
-                  {availableSlots.length > 0 ? (
+                  {availabilityLoading ? (
+                    <div className="p-6 bg-white rounded-xl text-center text-xs text-[#53583A]" role="status">Checking live availability…</div>
+                  ) : availabilityError ? (
+                    <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-center text-xs text-red-800" role="alert">{availabilityError}</div>
+                  ) : availableSlots.length > 0 ? (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[36vh] overflow-y-auto pr-1">
                       {availableSlots.map((slot) => (
                         <button
@@ -307,68 +310,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                   ) : (
                     <div className="p-6 bg-amber-50/80 border border-amber-200 rounded-xl text-center text-xs text-amber-800 space-y-1">
                       <ShieldAlert className="w-5 h-5 mx-auto text-amber-600 mb-1" />
-                      <p className="font-semibold">No available slots for this date</p>
+                      <p className="font-semibold">No live time slots are available</p>
                       <p className="text-[11px]">
-                        The salon may be fully booked, closed for a holiday, or past operating
-                        hours. Please select another date.
+                        Live slots are returned only when the salon database has verified staff qualifications for every selected service. No sample times are shown as real availability.
                       </p>
                     </div>
                   )}
                 </div>
               </div>
+              <details className="rounded-xl border border-[#53583A]/20 bg-[#E3E9DF]/50 p-4">
+                <summary className="cursor-pointer text-xs font-semibold text-[#26352A]">Try Demo Booking Preview · Sample Data</summary>
+                <DemoBookingPreview />
+              </details>
             </div>
           )}
 
-          {/* STEP 3: STYLIST & CONTACT */}
+          {/* STEP 3: CUSTOMER CONTACT */}
           {step === 3 && (
             <div className="space-y-5">
-              {/* Staff Preference */}
-              <div>
-                <label className="block text-xs font-semibold text-[#26352A] uppercase tracking-wider mb-2">
-                  Select Specialist or Stylist
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                  <div
-                    onClick={() => setSelectedStaffId(undefined)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center space-x-3 ${
-                      selectedStaffId === undefined
-                        ? 'border-[#26352A] bg-white ring-2 ring-[#26352A]/20'
-                        : 'border-[#D8C9A7]/40 bg-white/70 hover:bg-white'
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-[#E3E9DF] flex items-center justify-center font-bold text-xs text-[#26352A]">
-                      ANY
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#26352A]">Any Available Staff</p>
-                      <p className="text-[10px] text-gray-500">Fastest appointment match</p>
-                    </div>
-                  </div>
-
-                  {staffList.map((stf) => (
-                    <div
-                      key={stf.id}
-                      onClick={() => setSelectedStaffId(stf.id)}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center space-x-3 ${
-                        selectedStaffId === stf.id
-                          ? 'border-[#26352A] bg-white ring-2 ring-[#26352A]/20'
-                          : 'border-[#D8C9A7]/40 bg-white/70 hover:bg-white'
-                      }`}
-                    >
-                      <img
-                        src={stf.avatarUrl}
-                        alt={stf.name}
-                        className="w-10 h-10 rounded-full object-cover border border-[#D8C9A7]"
-                      />
-                      <div className="overflow-hidden">
-                        <p className="text-xs font-bold text-[#26352A] truncate">{stf.name}</p>
-                        <p className="text-[10px] text-gray-500 truncate">{stf.title}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Contact Information Form */}
               <div className="pt-2 border-t border-[#D8C9A7]/30 space-y-3">
                 <label className="block text-xs font-semibold text-[#26352A] uppercase tracking-wider">
@@ -384,7 +343,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                       placeholder="e.g. Kavya Rai"
                       value={contact.fullName}
                       onChange={(e) => setContact({ fullName: e.target.value })}
-                      className="w-full px-3.5 py-2 text-xs rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
+                      className="w-full px-3.5 py-2 text-base sm:text-sm rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
                     />
                   </div>
                   <div>
@@ -396,7 +355,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                       placeholder="e.g. 98451 12233"
                       value={contact.phone}
                       onChange={(e) => setContact({ phone: e.target.value })}
-                      className="w-full px-3.5 py-2 text-xs rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
+                      className="w-full px-3.5 py-2 text-base sm:text-sm rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
                     />
                   </div>
                 </div>
@@ -411,7 +370,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                       placeholder="kavya.rai@example.com"
                       value={contact.email}
                       onChange={(e) => setContact({ email: e.target.value })}
-                      className="w-full px-3.5 py-2 text-xs rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
+                      className="w-full px-3.5 py-2 text-base sm:text-sm rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
                     />
                   </div>
                   <div>
@@ -423,7 +382,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                       placeholder="e.g. Prefer organic herbal oil, first visit"
                       value={contact.notes}
                       onChange={(e) => setContact({ notes: e.target.value })}
-                      className="w-full px-3.5 py-2 text-xs rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
+                      className="w-full px-3.5 py-2 text-base sm:text-sm rounded-lg border border-[#D8C9A7] bg-white focus:outline-none focus:ring-1 focus:ring-[#26352A]"
                     />
                   </div>
                 </div>
@@ -435,7 +394,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
           {step === 4 && (
             <div className="space-y-5">
               <div className="bg-white rounded-xl p-5 border border-[#D8C9A7]/50 shadow-xs space-y-4">
-                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                <div className="border-b border-gray-100 pb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h4 className="font-serif text-base font-bold text-[#26352A]">
                       Appointment Summary
@@ -476,7 +435,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                     <p className="text-xs font-bold text-[#26352A]">{formatDuration(totalDuration)}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-gray-500">Estimated Total</span>
+                    <span className="text-xs text-gray-500">Catalogue subtotal preview</span>
                     <p className="text-base font-bold text-[#26352A]">{formatINR(totalPrice)}</p>
                   </div>
                 </div>
@@ -494,108 +453,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                 </div>
               </div>
 
-              <div className="p-3 bg-[#E3E9DF]/70 rounded-xl text-xs text-[#26352A]/80 flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-[#26352A] shrink-0 mt-0.5" />
-                <span>
-                  No immediate advance payment required. You may pay at the salon via Cash, UPI (GPay/PhonePe), or Card upon completion.
-                </span>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start space-x-2">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>Prices and duration shown are catalogue previews. No appointment is being created or confirmed in this stage.</span>
               </div>
             </div>
           )}
 
-          {/* STEP 5: SUCCESS & BOOKING REFERENCE */}
-          {step === 5 && lastConfirmedAppointment && (
-            <div className="text-center py-6 px-4 space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                <CheckCircle2 className="w-9 h-9" />
-              </div>
-
-              <div>
-                <h3 className="font-serif text-2xl font-bold text-[#26352A]">
-                  Appointment Confirmed!
-                </h3>
-                <p className="text-xs text-gray-600 mt-1">
-                  We look forward to welcoming you at The Oasis in Puttur.
-                </p>
-              </div>
-
-              {/* Reference Card */}
-              <div className="bg-white rounded-xl p-5 border border-[#D8C9A7] max-w-md mx-auto shadow-sm space-y-3 text-left">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs text-gray-500">Booking Reference</span>
-                  <span className="font-mono text-sm font-bold text-[#26352A] bg-[#E3E9DF] px-2.5 py-0.5 rounded">
-                    {lastConfirmedAppointment.bookingReference}
-                  </span>
-                </div>
-
-                <div className="text-xs space-y-1.5">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Date & Time</span>
-                    <span className="font-semibold text-[#26352A]">
-                      {formatDateWithWeekday(lastConfirmedAppointment.appointmentDate)} at{' '}
-                      {formatTime12Hour(lastConfirmedAppointment.startTime)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Specialist</span>
-                    <span className="font-semibold text-[#26352A]">
-                      {lastConfirmedAppointment.staffName || 'Oasis Specialist'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Services</span>
-                    <span className="font-semibold text-[#26352A]">
-                      {lastConfirmedAppointment.services.map((s) => s.name).join(', ')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t border-gray-100 pt-2 font-bold text-sm">
-                    <span>Total Amount</span>
-                    <span className="text-[#26352A]">
-                      {formatINR(lastConfirmedAppointment.totalPrice)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <button
-                  onClick={() => {
-                    closeBooking();
-                    if (onNavigateToAppointments) {
-                      onNavigateToAppointments();
-                    }
-                  }}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-[#26352A] text-white rounded-xl text-xs font-semibold hover:bg-[#19231C] transition-all shadow-md"
-                >
-                  View in My Appointments
-                </button>
-                <button
-                  onClick={() => {
-                    resetBooking();
-                    closeBooking();
-                  }}
-                  className="w-full sm:w-auto px-6 py-2.5 border border-[#26352A]/40 text-[#26352A] rounded-xl text-xs font-semibold hover:bg-[#E3E9DF] transition-all"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Modal Footer Controls (Steps 1 to 4) */}
-        {step < 5 && (
-          <div className="bg-white px-6 py-4 border-t border-[#D8C9A7]/30 flex items-center justify-between">
+        <>
+          <div className="bg-white px-4 sm:px-6 py-4 border-t border-[#D8C9A7]/30 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Running total */}
             <div>
               <span className="text-[11px] text-gray-500 block">
-                {selectedServices.length} service(s) selected • {formatDuration(totalDuration)}
+                {selectedServices.length} service(s) selected · duration preview {formatDuration(totalDuration)}
               </span>
-              <span className="text-base font-bold text-[#26352A]">{formatINR(totalPrice)}</span>
+              <span className="text-sm font-bold text-[#26352A]">Catalogue price preview: {formatINR(totalPrice)}</span>
             </div>
 
             {/* Step navigation buttons */}
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {step > 1 && (
                 <button
                   onClick={() => setStep(step - 1)}
@@ -621,7 +500,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
                   disabled={!selectedSlot}
                   className="px-5 py-2.5 bg-[#26352A] text-white rounded-xl text-xs font-semibold hover:bg-[#19231C] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
-                  Continue to Stylist
+                  Continue to Contact Details
                 </button>
               )}
 
@@ -637,23 +516,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({ onNavigateToAppointm
 
               {step === 4 && (
                 <button
-                  onClick={() => user ? submitBooking() : onRequireSignIn?.()}
-                  disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-[#26352A] text-[#F5F1E8] rounded-xl text-xs font-semibold hover:bg-[#19231C] active:scale-95 transition-all shadow-md flex items-center space-x-2"
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  className="px-6 py-2.5 bg-gray-300 text-gray-700 rounded-xl text-xs font-semibold cursor-not-allowed"
                 >
-                  {isSubmitting ? (
-                    <span>Confirming...</span>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5 text-[#D8C9A7]" />
-                      <span>{user ? 'Confirm Booking' : 'Sign in to Confirm'}</span>
-                    </>
-                  )}
+                  Booking confirmation unavailable
                 </button>
               )}
             </div>
           </div>
-        )}
+        </>
       </div>
     </div>
   );

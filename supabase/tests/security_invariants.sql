@@ -1,7 +1,7 @@
 -- Run only on a disposable database with `supabase test db`.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(69);
+SELECT plan(76);
 
 CREATE TEMP TABLE booking_fixture_date ON COMMIT DROP AS
 SELECT candidate::date AS booking_date
@@ -31,11 +31,28 @@ SELECT ok(NOT has_sequence_privilege('authenticated', 'public.salon_business_hou
   AND NOT has_sequence_privilege('authenticated', 'public.salon_business_hours_id_seq', 'SELECT')
   AND NOT has_sequence_privilege('authenticated', 'public.salon_business_hours_id_seq', 'UPDATE'), 'authenticated has no sequence privileges');
 SELECT ok(NOT has_function_privilege('anon', 'public.create_booking(uuid[],date,time,uuid,text,text,text,text)', 'EXECUTE')
+  AND NOT has_function_privilege('authenticated', 'public.create_booking(uuid[],date,time,uuid,text,text,text,text)', 'EXECUTE')
+  AND NOT has_function_privilege('anon', 'public.cancel_customer_booking(uuid,text)', 'EXECUTE')
+  AND NOT has_function_privilege('authenticated', 'public.cancel_customer_booking(uuid,text)', 'EXECUTE')
+  AND NOT has_function_privilege('anon', 'public.reschedule_customer_booking(uuid,date,time)', 'EXECUTE')
+  AND NOT has_function_privilege('authenticated', 'public.reschedule_customer_booking(uuid,date,time)', 'EXECUTE')
+  AND NOT has_function_privilege('anon', 'public.update_appointment_status(uuid,public.appointment_status)', 'EXECUTE')
+  AND NOT has_function_privilege('authenticated', 'public.update_appointment_status(uuid,public.appointment_status)', 'EXECUTE')
   AND NOT has_function_privilege('anon', 'public.record_appointment_payment(uuid,public.payment_method,text,text)', 'EXECUTE')
-  AND NOT has_table_privilege('anon', 'public.audit_logs', 'INSERT'), 'anon cannot book, record payments, or write audit rows');
+  AND NOT has_function_privilege('authenticated', 'public.record_appointment_payment(uuid,public.payment_method,text,text)', 'EXECUTE')
+  AND NOT has_table_privilege('anon', 'public.audit_logs', 'INSERT'), 'browser roles cannot mutate bookings or payments');
 SELECT ok(NOT has_table_privilege('anon', 'public.staff_private', 'SELECT'), 'anonymous users cannot read private staff contacts');
+SELECT ok(to_regprocedure('public.get_available_slots(date,uuid[])') IS NOT NULL
+  AND to_regprocedure('public.get_available_slots(date,integer,uuid,uuid[])') IS NULL,
+  'availability RPC accepts date and service IDs, not browser duration or staff IDs');
 SELECT is((SELECT count(*)::integer FROM public.services WHERE source_key IS NOT NULL),133,'all reviewed catalogue rows have stable source keys');
 SELECT is((SELECT count(*)::integer FROM public.staff WHERE source_key IS NOT NULL),4,'all reviewed public staff rows have stable source keys');
+SELECT is((SELECT count(*)::integer FROM public.staff WHERE is_demo),4,'all seeded staff are explicitly marked as demo data');
+SELECT is((SELECT count(*)::integer FROM public.salon_holidays),0,'fresh reference seed does not invent holiday closures');
+SELECT is((SELECT count(*)::integer FROM public.get_available_slots(
+  (SELECT booking_date FROM booking_fixture_date),
+  ARRAY[(SELECT id FROM public.services WHERE source_key='w-cut-1')]::uuid[]
+)),0,'demo staff without qualification links do not advertise availability');
 SELECT is((SELECT count(*)::integer FROM public.services WHERE hair_length IS NOT NULL),15,'all fifteen reviewed hair-length variants are structured');
 SELECT is((SELECT count(*)::integer FROM public.services WHERE price_type <> 'fixed' AND requires_confirmation),6,'all variable-price services require final-price confirmation');
 SELECT is((SELECT count(*)::integer FROM public.staff_private),0,'reference seed contains no staff contact details');
@@ -50,7 +67,7 @@ SELECT is((SELECT name FROM public.services WHERE source_key='w-cut-1'), 'Baby H
 SELECT lives_ok($$INSERT INTO public.staff(source_key,name,title)
   VALUES ('stf-1','Edited staff name must not win','Edited title')
   ON CONFLICT (source_key) DO NOTHING$$, 'rerunning a matching staff source key is safe');
-SELECT is((SELECT name FROM public.staff WHERE source_key='stf-1'), 'Ramesh Shetty'::text, 'reference seed conflict does not overwrite an administrator staff value');
+SELECT is((SELECT name FROM public.staff WHERE source_key='stf-1'), 'Demo: Ramesh Shetty'::text, 'reference seed conflict does not overwrite an administrator staff value');
 SELECT is((SELECT count(*)::integer FROM public.services WHERE price_type='range'),4,'four catalogue prices are represented as ranges');
 SELECT is((SELECT count(*)::integer FROM public.services WHERE price_type='starting_at'),2,'two catalogue prices are represented as starting prices');
 SELECT ok(NOT EXISTS (
@@ -93,6 +110,10 @@ VALUES
 INSERT INTO public.services(id,name,category,gender,price,price_confirmed,requires_confirmation,duration_minutes,is_active)
 VALUES ('30000000-0000-4000-8000-000000000002','Inactive test service','Hair','unisex',75,true,false,30,false);
 INSERT INTO public.staff_services VALUES ('20000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001');
+UPDATE public.services SET duration_minutes=45 WHERE id='30000000-0000-4000-8000-000000000001';
+SELECT is((SELECT max(available_time) FROM public.get_available_slots(
+  (SELECT booking_date FROM booking_fixture_date), ARRAY['30000000-0000-4000-8000-000000000001']::uuid[]
+)), '19:30'::time, 'availability derives its duration from the database service record');
 INSERT INTO public.appointments(id,booking_reference,customer_id,customer_name,customer_phone,customer_email,staff_id,appointment_date,start_time,end_time,total_duration_minutes,total_price,status)
 VALUES
  ('40000000-0000-4000-8000-000000000001','TEST-A','10000000-0000-4000-8000-000000000001','Customer A','1','cust-a@test.invalid','20000000-0000-4000-8000-000000000001',(SELECT booking_date FROM booking_fixture_date),'10:00','10:30',30,100,'confirmed'),
@@ -100,6 +121,14 @@ VALUES
 INSERT INTO public.appointment_services(appointment_id,service_id,service_name,service_price,duration_minutes,hair_length) VALUES
  ('40000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','Test service',100,30,'short'),
  ('40000000-0000-4000-8000-000000000002','30000000-0000-4000-8000-000000000001','Test service',100,30,'short');
+
+-- Temporary test-only grants exercise each RPC's internal authorization and
+-- server-side validation. The enclosing transaction rolls these ACL changes back.
+GRANT EXECUTE ON FUNCTION public.create_booking(uuid[], date, time, uuid, text, text, text, text),
+  public.cancel_customer_booking(uuid, text),
+  public.reschedule_customer_booking(uuid, date, time),
+  public.update_appointment_status(uuid, public.appointment_status),
+  public.record_appointment_payment(uuid, public.payment_method, text, text) TO authenticated;
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
@@ -156,6 +185,15 @@ SELECT ok(NOT EXISTS (SELECT 1 FROM public.appointments WHERE id='40000000-0000-
 SELECT lives_ok($$SELECT public.update_appointment_status('40000000-0000-4000-8000-000000000001','checked_in')$$, 'assigned staff may perform a valid status transition');
 SELECT is((SELECT status FROM public.appointments WHERE id='40000000-0000-4000-8000-000000000001'), 'checked_in'::public.appointment_status, 'assigned appointment receives the staff status change');
 SELECT throws_ok($$SELECT public.update_appointment_status('40000000-0000-4000-8000-000000000002','checked_in')$$, NULL, 'Assigned staff access required', 'staff cannot change unassigned appointment');
+SELECT lives_ok($sql$DO $body$
+DECLARE changed_rows integer;
+BEGIN
+  UPDATE public.services SET name='Staff must not edit catalogue' WHERE source_key='w-cut-1';
+  GET DIAGNOSTICS changed_rows = ROW_COUNT;
+  IF changed_rows <> 0 THEN RAISE EXCEPTION 'staff edited the admin catalogue'; END IF;
+END
+$body$;$sql$, 'staff cannot edit admin catalogue data');
+SELECT throws_ok($$SELECT public.admin_set_profile_role('10000000-0000-4000-8000-000000000001','admin')$$, NULL, 'Administrator role required', 'staff cannot use admin role-management function');
 RESET ROLE;
 
 SET LOCAL ROLE authenticated;
@@ -190,6 +228,11 @@ SELECT is((SELECT count(*)::integer FROM public.salon_business_hours WHERE day_o
 SELECT lives_ok($$SELECT public.record_appointment_payment('40000000-0000-4000-8000-000000000001','cash')$$, 'admin can record a completed payment');
 SELECT is((SELECT payment_status FROM public.payments WHERE appointment_id='40000000-0000-4000-8000-000000000001'), 'completed'::public.payment_status, 'admin payment is stored as completed');
 RESET ROLE;
+REVOKE EXECUTE ON FUNCTION public.create_booking(uuid[], date, time, uuid, text, text, text, text),
+  public.cancel_customer_booking(uuid, text),
+  public.reschedule_customer_booking(uuid, date, time),
+  public.update_appointment_status(uuid, public.appointment_status),
+  public.record_appointment_payment(uuid, public.payment_method, text, text) FROM authenticated;
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);

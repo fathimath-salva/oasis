@@ -1,8 +1,9 @@
-﻿import React from 'react';
+import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
-import { SALON_INFO, INITIAL_SERVICES } from '../constants/salonData';
-import { formatINR } from '../lib/formatters';
+import { SALON_INFO } from '../constants/salonData';
+import { getCataloguePriceLabel } from '../lib/formatters';
+import { isFixedPriceService } from '../lib/serviceMapper';
 
 const SERVICE_COLLECTIONS = [
   { title: "Men's Services", filter: 'men', description: 'Haircuts, colour and grooming services for men.', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of a barbershop' },
@@ -22,21 +23,21 @@ const FEATURED_IMAGES: Record<string, string> = {
 };
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
-  const { openBooking } = useBooking();
+  const { openBooking, services, catalogueLoading, catalogueError } = useBooking();
 
-  // Featured 4 curated services Ã¢â‚¬â€ selected by stable ID
+  // Featured curated services selected by stable ID
   const featuredServices = [
-    'w-cut-4',    // Women's Advance Hair Cut (with Wash / Blow-Dry)
-    'm-spa-m1',   // Men's Swedish Massage
-    'w-spa-4',    // Women's Keratin Spa
-    'w-pf-6',     // Women's Korean Glass Facial
+    'w-cut-4',
+    'm-spa-m1',
+    'w-spa-4',
+    'w-pf-6',
   ]
-    .map((id) => {
-      const svc = INITIAL_SERVICES.find((s) => s.id === id);
+    .map((sourceKey) => {
+      const svc = services.find((service) => service.sourceKey === sourceKey);
       if (!svc) return null;
-      return { ...svc, imageUrl: svc.imageUrl || FEATURED_IMAGES[id] };
+      return { ...svc, imageUrl: svc.imageUrl || FEATURED_IMAGES[sourceKey] };
     })
-    .filter(Boolean) as typeof INITIAL_SERVICES;
+    .filter((service) => service !== null);
 
   return (
     <div className="space-y-8 pb-14 sm:space-y-10">
@@ -94,6 +95,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </button>
           </div>
 
+          {catalogueError && <p className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">{catalogueError}</p>}
+          {catalogueLoading && <p className="mb-5 text-sm text-[#53583A]" role="status">Loading the live service catalogue…</p>}
+          {!catalogueLoading && !catalogueError && featuredServices.length === 0 && <p className="mb-5 rounded-xl bg-white p-4 text-sm text-[#53583A]" role="status">No featured services are available yet. Browse the service catalogue or contact the salon.</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredServices.map((service) => (
               <div
@@ -123,16 +127,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
                     <div>
                       <span className="text-base font-medium text-[#343923]">
-                        {service.priceConfirmed && !service.requiresConfirmation ? formatINR(service.price) : 'Price to be confirmed'}
+                        {getCataloguePriceLabel(service)}
                       </span>
                     </div>
 
                     <button
                       onClick={() => openBooking(service)}
-                      disabled={!service.priceConfirmed || service.requiresConfirmation}
+                      disabled={!isFixedPriceService(service)}
                       className="px-3.5 py-2 bg-[#53583A] text-white text-xs font-medium hover:bg-[#343923] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Book Now
+                      {isFixedPriceService(service) ? 'Book Now' : 'Not bookable yet'}
                     </button>
                   </div>
                 </div>

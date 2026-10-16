@@ -26,6 +26,17 @@ export function formatServicePrice(service: {
   return formatINR(service.price);
 }
 
+/** Show verified catalogue pricing independently from booking eligibility. */
+export function getCataloguePriceLabel(service: {
+  price: number;
+  priceConfirmed: boolean;
+  displayPrice?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}): string {
+  return service.priceConfirmed ? formatServicePrice(service) : 'Price to be confirmed';
+}
+
 export function formatDuration(minutes: number): string {
   if (minutes < 60) {
     return `${minutes} mins`;

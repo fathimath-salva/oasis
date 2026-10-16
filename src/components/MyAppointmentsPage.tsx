@@ -193,12 +193,12 @@ export const MyAppointmentsPage: React.FC<MyAppointmentsPageProps> = ({ onOpenBo
             placeholder="Search by Booking Reference (e.g. OASIS-2026-8021) or Phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#D8C9A7] bg-white focus:outline-none focus:ring-2 focus:ring-[#26352A]/20"
+            className="w-full pl-9 pr-4 py-2 text-base sm:text-sm rounded-xl border border-[#D8C9A7] bg-white focus:outline-none focus:ring-2 focus:ring-[#26352A]/20"
           />
         </div>
         <button
           onClick={refreshList}
-          className="px-4 py-2 bg-[#E3E9DF] text-[#26352A] rounded-xl text-xs font-semibold hover:bg-[#A8B7A0]/40 transition-colors flex items-center space-x-1.5 shrink-0"
+          className="min-h-11 px-4 py-2 bg-[#E3E9DF] text-[#26352A] rounded-xl text-xs font-semibold hover:bg-[#A8B7A0]/40 transition-colors flex items-center space-x-1.5 shrink-0"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh</span>
@@ -353,8 +353,8 @@ export const MyAppointmentsPage: React.FC<MyAppointmentsPageProps> = ({ onOpenBo
 
       {/* RESCHEDULE MODAL */}
       {reschedulingAppointment && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D8C9A7] space-y-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+          <div className="my-0 sm:my-4 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto bg-white rounded-2xl p-5 sm:p-6 shadow-2xl border border-[#D8C9A7] space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <h3 className="font-serif text-lg font-bold text-[#26352A]">
                 Reschedule Booking {reschedulingAppointment.bookingReference}
@@ -384,7 +384,7 @@ export const MyAppointmentsPage: React.FC<MyAppointmentsPageProps> = ({ onOpenBo
                   min={new Date().toISOString().split('T')[0]}
                   value={rescheduleDate}
                   onChange={(e) => setRescheduleDate(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300"
+                  className="w-full px-3.5 py-2 text-base sm:text-sm rounded-xl border border-gray-300"
                 />
               </div>
 
@@ -436,8 +436,8 @@ export const MyAppointmentsPage: React.FC<MyAppointmentsPageProps> = ({ onOpenBo
 
       {/* CANCEL REASON MODAL */}
       {cancellingAppointmentId && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-red-200 space-y-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+          <div className="my-0 sm:my-4 max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto bg-white rounded-2xl p-5 sm:p-6 shadow-2xl border border-red-200 space-y-4">
             <h3 className="font-serif text-base font-bold text-red-900 flex items-center space-x-2">
               <ShieldAlert className="w-5 h-5 text-red-600" />
               <span>Cancel Appointment?</span>
