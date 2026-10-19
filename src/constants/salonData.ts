@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   SalonService,
   StaffMember,
   SalonBusinessHours,
@@ -129,7 +129,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Women's Blow Dry ---
   {
     id: 'w-bd-1',
-    name: 'Blow Dry â€” Short',
+    name: 'Blow Dry — Short',
     category: 'Blow Dry',
     gender: 'women',
     hairLength: 'short',
@@ -140,7 +140,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-bd-2',
-    name: 'Blow Dry â€” Medium',
+    name: 'Blow Dry — Medium',
     category: 'Blow Dry',
     gender: 'women',
     hairLength: 'medium',
@@ -151,7 +151,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-bd-3',
-    name: 'Blow Dry â€” Long',
+    name: 'Blow Dry — Long',
     category: 'Blow Dry',
     gender: 'women',
     hairLength: 'long',
@@ -162,7 +162,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-bd-4',
-    name: 'Blow Dry â€” Extra Long',
+    name: 'Blow Dry — Extra Long',
     category: 'Blow Dry',
     gender: 'women',
     hairLength: 'extra_long',
@@ -175,7 +175,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Women's Smoothening / Straightening ---
   {
     id: 'w-sm-1',
-    name: 'Smoothening / Straightening â€” Short',
+    name: 'Smoothening / Straightening — Short',
     category: 'Smoothening / Straightening',
     gender: 'women',
     hairLength: 'short',
@@ -186,7 +186,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-sm-2',
-    name: 'Smoothening / Straightening â€” Medium',
+    name: 'Smoothening / Straightening — Medium',
     category: 'Smoothening / Straightening',
     gender: 'women',
     hairLength: 'medium',
@@ -197,7 +197,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-sm-3',
-    name: 'Smoothening / Straightening â€” Long',
+    name: 'Smoothening / Straightening — Long',
     category: 'Smoothening / Straightening',
     gender: 'women',
     hairLength: 'long',
@@ -210,7 +210,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Women's Keratin Treatment ---
   {
     id: 'w-ker-1',
-    name: 'Keratin Treatment â€” Short',
+    name: 'Keratin Treatment — Short',
     category: 'Keratin Treatment',
     gender: 'women',
     hairLength: 'short',
@@ -221,7 +221,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-ker-2',
-    name: 'Keratin Treatment â€” Medium',
+    name: 'Keratin Treatment — Medium',
     category: 'Keratin Treatment',
     gender: 'women',
     hairLength: 'medium',
@@ -232,7 +232,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-ker-3',
-    name: 'Keratin Treatment â€” Long',
+    name: 'Keratin Treatment — Long',
     category: 'Keratin Treatment',
     gender: 'women',
     hairLength: 'long',
@@ -243,12 +243,12 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-ker-4',
-    name: 'Keratin Treatment â€” Extra Long',
+    name: 'Keratin Treatment — Extra Long',
     category: 'Keratin Treatment',
     gender: 'women',
     hairLength: 'extra_long',
     price: 10000,
-    displayPrice: 'â‚¹10,000+',
+    displayPrice: '₹10,000+',
     priceConfirmed: true,
     durationMinutes: 240,
     isActive: true,
@@ -387,7 +387,7 @@ export const INITIAL_SERVICES: SalonService[] = [
     price: 3000,
     minPrice: 3000,
     maxPrice: 5000,
-    displayPrice: 'â‚¹3,000â€“â‚¹5,000',
+    displayPrice: '₹3,000–₹5,000',
     priceConfirmed: true,
     durationMinutes: 75,
     isActive: true,
@@ -478,7 +478,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Women's Hair Colour ---
   {
     id: 'w-hc-1',
-    name: 'Global Colour â€” Short',
+    name: 'Global Colour — Short',
     category: 'Hair Colour',
     gender: 'women',
     hairLength: 'short',
@@ -489,7 +489,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-hc-2',
-    name: 'Global Colour â€” Medium',
+    name: 'Global Colour — Medium',
     category: 'Hair Colour',
     gender: 'women',
     hairLength: 'medium',
@@ -500,7 +500,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-hc-3',
-    name: 'Global Colour â€” Long',
+    name: 'Global Colour — Long',
     category: 'Hair Colour',
     gender: 'women',
     hairLength: 'long',
@@ -511,12 +511,12 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-hc-4',
-    name: 'Global Colour â€” Extra Long',
+    name: 'Global Colour — Extra Long',
     category: 'Hair Colour',
     gender: 'women',
     hairLength: 'extra_long',
     price: 3000,
-    displayPrice: 'â‚¹3,000+',
+    displayPrice: '₹3,000+',
     priceConfirmed: true,
     durationMinutes: 135,
     isActive: true,
@@ -533,7 +533,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-hc-6',
-    name: 'Highlights â€“ Full Hair',
+    name: 'Highlights – Full Hair',
     category: 'Hair Colour',
     gender: 'women',
     price: 3000,
@@ -803,7 +803,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Women's Brazilian Waxing ---
   {
     id: 'w-bw-1',
-    name: 'Brazilian Waxing â€” Upper Lip',
+    name: 'Brazilian Waxing — Upper Lip',
     category: 'Brazilian Waxing',
     gender: 'women',
     price: 40,
@@ -813,7 +813,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-bw-2',
-    name: 'Brazilian Waxing â€” Chin / Jawline',
+    name: 'Brazilian Waxing — Chin / Jawline',
     category: 'Brazilian Waxing',
     gender: 'women',
     price: 60,
@@ -823,7 +823,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-bw-3',
-    name: 'Brazilian Waxing â€” Forehead',
+    name: 'Brazilian Waxing — Forehead',
     category: 'Brazilian Waxing',
     gender: 'women',
     price: 50,
@@ -835,7 +835,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Women's Threading ---
   {
     id: 'w-th-1',
-    name: 'Threading â€” Upper Lip',
+    name: 'Threading — Upper Lip',
     category: 'Threading',
     gender: 'women',
     price: 20,
@@ -845,7 +845,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-th-2',
-    name: 'Threading â€” Eyebrows',
+    name: 'Threading — Eyebrows',
     category: 'Threading',
     gender: 'women',
     price: 30,
@@ -855,7 +855,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-th-3',
-    name: 'Threading â€” Chin / Jawline',
+    name: 'Threading — Chin / Jawline',
     category: 'Threading',
     gender: 'women',
     price: 70,
@@ -865,7 +865,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'w-th-4',
-    name: 'Threading â€” Forehead',
+    name: 'Threading — Forehead',
     category: 'Threading',
     gender: 'women',
     price: 30,
@@ -875,7 +875,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
 
   // ==========================================================================
-  // B. MEN'S SERVICES (Source: Oasis-menâ€™s Catalog.pdf)
+  // B. MEN'S SERVICES (Source: Oasis-men’s Catalog.pdf)
   // ==========================================================================
 
   // --- Men's Hair Cutting ---
@@ -994,7 +994,7 @@ export const INITIAL_SERVICES: SalonService[] = [
     price: 1000,
     minPrice: 1000,
     maxPrice: 3000,
-    displayPrice: 'â‚¹1,000â€“â‚¹3,000',
+    displayPrice: '₹1,000–₹3,000',
     priceConfirmed: true,
     durationMinutes: 120,
     isActive: true,
@@ -1007,7 +1007,7 @@ export const INITIAL_SERVICES: SalonService[] = [
     price: 2000,
     minPrice: 2000,
     maxPrice: 3500,
-    displayPrice: 'â‚¹2,000â€“â‚¹3,500',
+    displayPrice: '₹2,000–₹3,500',
     priceConfirmed: true,
     durationMinutes: 120,
     isActive: true,
@@ -1157,7 +1157,7 @@ export const INITIAL_SERVICES: SalonService[] = [
     price: 3000,
     minPrice: 3000,
     maxPrice: 5000,
-    displayPrice: 'â‚¹3,000â€“â‚¹5,000',
+    displayPrice: '₹3,000–₹5,000',
     priceConfirmed: true,
     durationMinutes: 75,
     isActive: true,
@@ -1446,7 +1446,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   // --- Men's Threading (Only listed items) ---
   {
     id: 'm-th-1',
-    name: 'Threading â€” Eyebrows',
+    name: 'Threading — Eyebrows',
     category: 'Threading',
     gender: 'men',
     price: 40,
@@ -1456,7 +1456,7 @@ export const INITIAL_SERVICES: SalonService[] = [
   },
   {
     id: 'm-th-2',
-    name: 'Threading â€” Forehead',
+    name: 'Threading — Forehead',
     category: 'Threading',
     gender: 'men',
     price: 30,
@@ -1560,7 +1560,7 @@ export const INITIAL_STAFF: StaffMember[] = [
   },
   {
     id: 'stf-4',
-    name: 'Preethi Dâ€™Souza',
+    name: 'Preethi D’Souza',
     title: 'Spa Therapist',
     specialties: [
       'Body Spa & Massage',

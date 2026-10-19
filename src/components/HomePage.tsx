@@ -1,181 +1,202 @@
-﻿import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import React from 'react';
+import { ArrowDown, ArrowRight, MapPin } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
-import { SALON_INFO, INITIAL_SERVICES } from '../constants/salonData';
-import { formatINR } from '../lib/formatters';
+import { SALON_INFO } from '../constants/salonData';
+import { getCataloguePriceLabel } from '../lib/formatters';
+import { isFixedPriceService } from '../lib/serviceMapper';
+import { startHeroRotation } from '../lib/heroCarousel.mjs';
+import type { SalonService } from '../types/salon';
+import { InstagramIcon } from './InstagramIcon';
+import menBanner from '../../design-reference/mens.png';
+import womenBanner from '../../design-reference/womens.png';
+import spaBanner from '../../design-reference/spa.png';
 
-const SERVICE_COLLECTIONS = [
-  { title: "Men's Services", filter: 'men', description: 'Haircuts, colour and grooming services for men.', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of a barbershop' },
-  { title: "Women's Services", filter: 'women', description: 'Hair, beauty and personal care services for women.', image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of hair styling' },
-  { title: 'Spa & Body Treatments', filter: 'spa', description: 'Explore the hair spa and body treatments in our catalogue.', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=85', alt: 'Illustrative colour photograph of a spa treatment room' },
+const heroSlides = [
+  { id: 'welcome', title: 'Welcome to OASIS', image: '/images/salon-interior.jpg', kind: 'welcome' as const },
+  { id: 'men', title: 'Men’s Grooming', image: menBanner, alt: 'Men’s grooming service at OASIS', kind: 'service' as const, heading: 'MEN’S GROOMING', quote: 'Refined style. Timeless confidence.', filter: 'men', action: 'Explore men’s services' },
+  { id: 'women', title: 'Women’s Beauty', image: womenBanner, alt: 'Women’s beauty service at OASIS', kind: 'service' as const, heading: 'WOMEN’S BEAUTY', quote: 'Your beauty. Your moment. Your glow.', filter: 'women', action: 'Explore women’s services' },
+  { id: 'spa', title: 'Spa & Massage', image: spaBanner, alt: 'A customer receiving a relaxing massage at OASIS', kind: 'service' as const, heading: 'SPA & MASSAGE', quote: 'Relax your body. Restore your balance.', filter: 'spa', action: 'Explore spa services' },
 ];
 
-interface HomePageProps {
-  onNavigate: (view: string, filter?: string) => void;
-}
+const collections = [
+  { title: "Men’s Grooming", filter: 'men', image: '/images/men-grooming.jpg', alt: 'Men’s grooming portrait from the OASIS men’s catalogue' },
+  { title: "Women’s Beauty", filter: 'women', image: '/images/women-beauty.jpg', alt: 'Women’s beauty portrait from the OASIS women’s catalogue' },
+  { title: 'Spa & Massage', filter: 'spa', image: '/images/men-massage.jpg', alt: 'Spa and massage service image from the existing OASIS catalogue' },
+];
 
-const FEATURED_IMAGES: Record<string, string> = {
-  'w-cut-4': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
-  'm-spa-m1': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80',
-  'w-spa-4': 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80',
-  'w-pf-6': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
-};
+const mostLovedCards = [
+  {
+    key: 'keratin',
+    title: 'Keratin Treatment',
+    description: 'A keratin treatment option from the OASIS hair catalogue.',
+    image: '/images/women-hair-smoothing.jpg',
+    alt: 'Keratin hair treatment being styled in a salon',
+    matches: (service: SalonService) => service.category === 'Keratin Treatment',
+    preferred: (service: SalonService) => service.hairLength === 'short',
+    objectPosition: 'center 35%',
+  },
+  {
+    key: 'facial',
+    title: 'Classic Facial',
+    description: 'Classic facial care from the OASIS service catalogue.',
+    image: '/images/women-facial.jpg',
+    alt: 'A customer receiving a facial treatment',
+    matches: (service: SalonService) => service.category === 'Classic Facial',
+    preferred: (service: SalonService) => service.name === 'Basic Facial',
+    objectPosition: 'center 38%',
+  },
+  {
+    key: 'beard',
+    title: 'Beard Trimming & Styling',
+    description: 'A beard trim and styling service from the men’s grooming catalogue.',
+    image: '/images/men-grooming.jpg',
+    alt: 'A neatly groomed beard and hairstyle',
+    matches: (service: SalonService) => service.name === 'Beard Trimming & Styling',
+    preferred: () => true,
+    objectPosition: 'center 28%',
+  },
+  {
+    key: 'massage',
+    title: 'Body Spa & Massage',
+    description: 'A massage service from the OASIS spa catalogue.',
+    image: '/images/men-massage.jpg',
+    alt: 'A customer receiving a professional massage',
+    matches: (service: SalonService) => service.category === 'Body Spa & Massage',
+    preferred: (service: SalonService) => service.name === 'Swedish Massage',
+    objectPosition: 'center 48%',
+  },
+];
+
+interface HomePageProps { onNavigate: (view: string, filter?: string) => void; }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
-  const { openBooking } = useBooking();
+  const [activeHeroSlide, setActiveHeroSlide] = React.useState(0);
+  const [inquiry, setInquiry] = React.useState({ name: '', contact: '', message: '' });
+  const [whatsAppDraft, setWhatsAppDraft] = React.useState('');
+  const [inquiryError, setInquiryError] = React.useState('');
+  const { openBooking, services } = useBooking();
+  const lovedServices = mostLovedCards.flatMap((card) => {
+    const choices = services.filter((service) => isFixedPriceService(service) && card.matches(service));
+    const service = choices.find(card.preferred) ?? choices[0];
+    return service ? [{ ...card, service }] : [];
+  });
 
-  // Featured 4 curated services Ã¢â‚¬â€ selected by stable ID
-  const featuredServices = [
-    'w-cut-4',    // Women's Advance Hair Cut (with Wash / Blow-Dry)
-    'm-spa-m1',   // Men's Swedish Massage
-    'w-spa-4',    // Women's Keratin Spa
-    'w-pf-6',     // Women's Korean Glass Facial
-  ]
-    .map((id) => {
-      const svc = INITIAL_SERVICES.find((s) => s.id === id);
-      if (!svc) return null;
-      return { ...svc, imageUrl: svc.imageUrl || FEATURED_IMAGES[id] };
-    })
-    .filter(Boolean) as typeof INITIAL_SERVICES;
+  React.useEffect(() => {
+    return startHeroRotation(setActiveHeroSlide, heroSlides.length);
+  }, []);
 
   return (
-    <div className="space-y-8 pb-14 sm:space-y-10">
-      {/* 1. HERO SECTION */}
-      <section className="bg-[#F5F1E8] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="max-w-xl space-y-5">
-            <p className="text-xs font-medium tracking-wide text-[#53583A] sm:text-sm">Providence Plaza, Yelmudi Bridge, Puttur</p>
-            <h1 className="font-serif text-4xl leading-tight text-[#343923] sm:text-5xl lg:text-6xl">Take a little time for yourself</h1>
-            <p className="max-w-lg text-sm leading-7 text-[#53583A] sm:text-base">Haircuts, facials, hair spa and body treatments for men and women. Come in, relax and let us take care of you.</p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button onClick={() => openBooking()} className="bg-[#53583A] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#343923]">Book Appointment</button>
-              <button onClick={() => onNavigate('services', 'all')} className="border border-[#53583A]/40 px-6 py-3 text-sm font-medium text-[#343923] transition-colors hover:bg-[#EEE7DA]">View Services</button>
-            </div>
-          </div>
-          <figure className="relative min-w-0">
-            <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1400&q=85" alt="Illustrative salon interior with natural light" className="aspect-[4/3] w-full object-cover" />
-            <figcaption className="absolute bottom-3 left-3 bg-[#F5F1E8]/90 px-3 py-1.5 text-[10px] text-[#343923]">Illustrative image</figcaption>
-            <span className="absolute -right-2 -top-2 -z-0 h-20 w-20 border-r-4 border-t-4 border-[#C98C6B] sm:-right-4 sm:-top-4 sm:h-28 sm:w-28" aria-hidden="true" />
-          </figure>
+    <div className="home-page">
+      <section
+        className={`home-hero${heroSlides[activeHeroSlide].kind === 'service' ? ' home-hero--service' : ''}`}
+        data-testid="home-hero-carousel"
+        aria-label="OASIS highlights"
+        aria-roledescription="carousel"
+      >
+        <div className="home-hero-media" aria-hidden="true">
+          {heroSlides.map((slide, index) => (
+            <img
+              key={slide.id}
+              className={`home-hero-background${index === activeHeroSlide ? ' is-active' : ''}`}
+              src={slide.image}
+              alt=""
+              fetchPriority={index === activeHeroSlide ? 'high' : 'auto'}
+            />
+          ))}
         </div>
-        <div className="mx-auto mt-10 grid max-w-7xl grid-cols-1 gap-3 border-t border-[#53583A]/20 pt-5 text-sm text-[#343923] sm:grid-cols-3 sm:gap-6">
-          <p className="text-center sm:text-left">Services for men and women</p>
-          <p className="text-center sm:text-left">Providence Plaza, Puttur</p>
-          <a className="text-center underline underline-offset-4 hover:text-[#53583A] sm:text-left" href={`tel:${SALON_INFO.phones[0].raw}`}>Call 9151550077</a>
-        </div>
-      </section>
-      {/* 2. SERVICE COLLECTIONS */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 max-w-xl">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#53583A]">Our services</p>
-          <h2 className="mt-2 font-serif text-3xl text-[#343923] sm:text-4xl">Choose what feels right for you</h2>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICE_COLLECTIONS.map((collection, index) => <article key={collection.filter} className={`overflow-hidden border border-[#53583A]/15 bg-white ${index === 2 ? 'sm:col-span-2 lg:col-span-1' : ''}`}>
-            <div className="relative"><img src={collection.image} alt={collection.alt} className="h-48 w-full object-cover" /><span className="absolute left-3 top-3 bg-[#F5F1E8]/90 px-2.5 py-1 text-[10px] text-[#343923]">Illustrative image</span></div>
-            <div className="p-5"><h3 className="font-serif text-2xl text-[#343923]">{collection.title}</h3><p className="mt-2 text-sm leading-6 text-[#53583A]">{collection.description}</p><button onClick={() => onNavigate('services', collection.filter)} className="mt-4 text-sm font-medium text-[#53583A] underline underline-offset-4">Explore services <ArrowRight className="ml-1 inline h-4 w-4" /></button></div>
-          </article>)}
-        </div>
-      </section>
-      {/* 3. FEATURED SERVICES */}
-      <section className="bg-[#DDE4D7]/50 py-16 border-y border-[#A8B7A0]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#53583A]">Explore the catalogue</span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#343923]">Popular Services</h2>
-            </div>
-            <button
-              onClick={() => onNavigate('services', 'all')}
-              className="inline-flex items-center space-x-1 text-xs font-semibold text-[#343923] hover:text-[#53583A] transition-colors"
-            >
-              <span>View all services</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredServices.map((service) => (
+        <div className="home-hero-copy">
+          <div className="home-hero-slide-stack">
+            {heroSlides.map((slide, index) => (
               <div
-                key={service.id}
-                className="bg-white border-b border-[#53583A]/20 transition-colors flex flex-col justify-between group"
+                key={slide.id}
+                className={`home-hero-slide${index === activeHeroSlide ? ' is-active' : ''}${slide.kind === 'welcome' ? ' home-hero-slide--welcome' : ' home-hero-slide--service'}`}
+                role="group"
+                aria-hidden={index !== activeHeroSlide}
+                aria-label={`${index + 1} of ${heroSlides.length}: ${slide.title}`}
+                aria-roledescription="slide"
+                inert={index !== activeHeroSlide}
               >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={service.imageUrl}
-                    alt={`Illustrative colour photo for ${service.category.toLowerCase()}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 bg-[#F5F1E8]/90 text-[#343923] text-[10px] uppercase font-bold tracking-wider px-2.5 py-1">
-                    {service.gender === 'unisex' ? 'Unisex' : `${service.gender}'s`}
+                {slide.kind === 'welcome' ? <>
+                  <img className="home-hero-logo" src="/images/oasis-logo-transparent.png" alt="THE OASIS ’ UNISEX SALON & SPA" width="1600" height="909" />
+                  <h1>Make space for <em>yourself.</em></h1>
+                  <p className="home-hero-intro">Hair, beauty and spa care in a considered, welcoming space. Come as you are; leave feeling renewed.</p>
+                  <div className="home-actions">
+                    <button type="button" className="button-gold" onClick={() => openBooking()}>Book an appointment <ArrowRight size={16} /></button>
+                    <button type="button" className="button-quiet-light" onClick={() => onNavigate('services', 'all')}>Explore services</button>
                   </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <h3 className="font-serif text-base font-bold text-[#343923] leading-snug">
-                      {service.name}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{service.description}</p>
-                    <p className="mt-2 text-[10px] text-[#53583A]">Illustrative image</p>
-                  </div>
-
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <div>
-                      <span className="text-base font-medium text-[#343923]">
-                        {service.priceConfirmed && !service.requiresConfirmation ? formatINR(service.price) : 'Price to be confirmed'}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => openBooking(service)}
-                      disabled={!service.priceConfirmed || service.requiresConfirmation}
-                      className="px-3.5 py-2 bg-[#53583A] text-white text-xs font-medium hover:bg-[#343923] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Book Now
-                    </button>
-                  </div>
-                </div>
+                  <a className="hero-location" href={SALON_INFO.googleMaps.url} target="_blank" rel="noreferrer"><MapPin size={14} /> Providence Plaza, Puttur</a>
+                </> : <>
+                  <img className="home-hero-service-logo" src="/images/oasis-logo-transparent.png" alt="THE OASIS UNISEX SALON & SPA" width="900" height="511" />
+                  <p className="eyebrow">THE OASIS · PUTTUR</p>
+                  <h1>{slide.heading}</h1>
+                  <p className="home-hero-quote">“{slide.quote}”</p>
+                  <button type="button" className="button-gold" onClick={() => onNavigate('services', slide.filter)}>
+                    {slide.action} <ArrowRight size={16} />
+                  </button>
+                </>}
               </div>
             ))}
           </div>
         </div>
+        <a href="#salon-services" className="hero-scroll" aria-label="Scroll to salon services"><ArrowDown size={16} /></a>
       </section>
 
-      {/* 4. THE OASIS STORY */}
-      <section className="bg-[#EEE7DA] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-2 lg:gap-14">
-          <div className="max-w-xl">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#53583A]">Our Story</p>
-            <h2 className="mt-2 font-serif text-3xl text-[#343923] sm:text-4xl">The OASIS Story</h2>
-            <p className="mt-4 text-sm leading-7 text-[#53583A]">Welcome to THE OASIS UNISEX SALON & SPA - a place to take a little time for yourself. Explore hair, beauty and spa services in a comfortable setting, with a focus on personal care and helping you feel your best. We look forward to welcoming you.</p>
-            <button onClick={() => onNavigate('about')} className="mt-5 text-sm font-medium text-[#343923] underline underline-offset-4">Our Story</button>
-          </div>
-          <figure className="relative">
-            <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=85" alt="Illustrative spa treatment room" className="aspect-[4/3] w-full object-cover" />
-            <figcaption className="absolute bottom-3 left-3 bg-[#F5F1E8]/90 px-3 py-1.5 text-[10px] text-[#343923]">Illustrative image</figcaption>
-          </figure>
+      <section id="salon-services" className="home-category-section" aria-label="Service categories">
+        <div className="home-category-grid">
+          {collections.map((collection) => (
+            <button key={collection.filter} type="button" className="home-category-card" onClick={() => onNavigate('services', collection.filter)}>
+              <img src={collection.image} alt={collection.alt} width="900" height="1350" loading="lazy" />
+              <span>{collection.title}</span>
+            </button>
+          ))}
         </div>
       </section>
-      {/* 7. SALON LOCATION & CONTACT */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 border-y border-[#53583A]/20 py-8 md:grid-cols-3 md:items-center">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#53583A]">Visit us</p>
-            <h2 className="mt-2 font-serif text-3xl text-[#343923]">Find THE OASIS</h2>
-            <p className="mt-4 text-sm leading-6 text-[#53583A]">2nd Floor, Providence Plaza<br />Main Road, Yelmudi Bridge<br />Puttur, D.K., Karnataka, India</p>
-            <p className="mt-3 text-sm leading-6 text-[#53583A]">Call, message, or get directions to plan your visit.</p>
-          </div>
-          <figure className="relative">
-            <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80" alt="Illustrative colour photo of a salon interior" className="aspect-[16/10] w-full object-cover" />
-            <figcaption className="absolute bottom-2 left-2 bg-[#F5F1E8]/90 px-2 py-1 text-[10px] text-[#343923]">Illustrative image</figcaption>
-          </figure>
-          <div className="flex flex-wrap gap-3 md:justify-end">
-            {SALON_INFO.phones.map((phone) => <a key={phone.raw} href={`tel:${phone.raw}`} className="border border-[#53583A]/35 px-4 py-2.5 text-sm text-[#343923] hover:bg-[#EEE7DA]">Call {phone.display}</a>)}
-            <a href={SALON_INFO.googleMaps.url} target="_blank" rel="noopener noreferrer" className="bg-[#53583A] px-4 py-2.5 text-sm text-white hover:bg-[#343923]">Get Directions</a>
-            <button onClick={() => onNavigate('contact')} className="border border-[#53583A]/35 px-4 py-2.5 text-sm text-[#343923] hover:bg-[#EEE7DA]">Contact details</button>
-          </div>
+
+      <section className="home-popular-section home-most-loved-section" aria-labelledby="most-loved-heading">
+        <div className="home-section-heading">
+          <div><p className="eyebrow">Selected from our catalogue</p><h2 id="most-loved-heading">Most Loved at OASIS</h2></div>
+          <button type="button" className="text-link" onClick={() => onNavigate('services', 'all')}>View all services <ArrowRight size={16} /></button>
         </div>
+        {lovedServices.length > 0 ? <div className="home-most-loved-grid">
+          {lovedServices.map((card) => <button type="button" className="home-loved-card" key={card.key} onClick={() => openBooking(card.service)} aria-label={`Book ${card.title}, ${getCataloguePriceLabel(card.service)}`}>
+            <img src={card.image} alt={card.alt} loading="lazy" style={{ objectPosition: card.objectPosition }} />
+            <span className="home-loved-card-copy"><strong>{card.title}</strong>{card.service.name !== card.title && <span className="home-loved-card-service-name">{card.service.name}</span>}<span className="home-loved-card-description">{card.key === 'keratin' && card.service.hairLength ? `Keratin care for ${card.service.hairLength.replace('_', ' ')} hair.` : card.description}</span><span className="home-loved-card-price">{getCataloguePriceLabel(card.service)}</span></span>
+          </button>)}
+        </div> : <p className="home-most-loved-empty" role="status">Featured services will appear here when the catalogue is available.</p>}
+      </section>
+
+      <section className="home-review-section home-guest-feedback-section" aria-labelledby="guest-feedback-heading">
+        <div className="home-section-heading home-review-heading"><div><p className="eyebrow">Guest feedback</p><h2 id="guest-feedback-heading">Guest Feedback</h2><p className="home-guest-feedback-subtitle">Every visit, a little more special.</p></div></div>
+        <div className="home-review-empty" role="status">
+          <p className="home-review-empty-title">Your experience matters to us. Guest reviews will appear here soon.</p>
+        </div>
+      </section>
+
+      <section className="home-story-section" aria-labelledby="home-story-heading">
+        <p className="eyebrow">THE OASIS ’ Puttur</p><h2 id="home-story-heading">A little space to feel at home</h2><p>{SALON_INFO.tagline}. Find us at Providence Plaza in Puttur.</p>
+        <button type="button" className="text-link" onClick={() => onNavigate('about')}>Our Story <ArrowRight size={16} /></button>
+      </section>
+
+      <section className="home-map-section" aria-labelledby="home-map-heading">
+        <div className="home-map-copy"><p className="eyebrow">Find THE OASIS</p><h2 id="home-map-heading">Easy to Find</h2><p>{SALON_INFO.fullAddress}</p><p className="map-landmark">Down the road from Ujjivan Small Finance Bank ’ Puttur Branch.</p><a className="text-link" href={SALON_INFO.googleMaps.url} target="_blank" rel="noreferrer">Get directions <ArrowRight size={16} /></a></div>
+        <iframe title="Google Maps search for THE OASIS at verified Plus Code Q665+67R" src={SALON_INFO.googleMaps.embedUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+      </section>
+
+      <section className="home-instagram-section" aria-labelledby="home-instagram-heading">
+        <div><p className="eyebrow">Follow THE OASIS</p><h2 id="home-instagram-heading">Instagram</h2><p>See updates from the salon on {SALON_INFO.instagram.handle}.</p></div>
+        <a href={SALON_INFO.instagram.url} target="_blank" rel="noreferrer" className="home-instagram-link"><InstagramIcon className="h-4 w-4" /> Visit Instagram <ArrowRight size={16} /></a>
+      </section>
+
+      <section className="home-inquiry-section" aria-labelledby="home-inquiry-heading">
+        <div><p className="eyebrow">A question before your visit?</p><h2 id="home-inquiry-heading">We Would Love to Hear From You</h2><p>Share a few details and we’ll prepare a message for WhatsApp. It is sent only when you press Send there.</p></div>
+        <form className="oasis-inquiry-form" onSubmit={(event) => { event.preventDefault(); const value = inquiry.contact.trim(); const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); const isPhone = /^[+\d][\d\s().-]{6,}$/.test(value); if (!isEmail && !isPhone) { setInquiryError('Enter a valid email address or phone number.'); setWhatsAppDraft(''); return; } setInquiryError(''); const text = `Hello THE OASIS UNISEX SALON & SPA. My name is ${inquiry.name}. Contact: ${inquiry.contact}. ${inquiry.message}`; setWhatsAppDraft(`https://wa.me/91${SALON_INFO.phones[0].raw}?text=${encodeURIComponent(text)}`); }}>
+          <label>Your name<input required value={inquiry.name} onChange={(event) => setInquiry({ ...inquiry, name: event.target.value })} autoComplete="name" /></label>
+          <label>Email or phone<input required value={inquiry.contact} onChange={(event) => setInquiry({ ...inquiry, contact: event.target.value })} autoComplete="email" /></label>
+          {inquiryError && <p role="alert" className="inquiry-error">{inquiryError}</p>}
+          <label>Your message<textarea required rows={4} value={inquiry.message} onChange={(event) => setInquiry({ ...inquiry, message: event.target.value })} /></label>
+          <button className="button-dark" type="submit">Prepare WhatsApp message <ArrowRight size={16} /></button>
+          {whatsAppDraft && <a className="inquiry-whatsapp-link" href={whatsAppDraft} target="_blank" rel="noreferrer">Open WhatsApp and press Send</a>}
+        </form>
       </section>
     </div>
   );

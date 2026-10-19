@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
-import type { SalonService, Appointment } from '../types/salon';
-import { db } from '../lib/db';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import type { SalonService } from '../types/salon';
+import { salonRepository } from '../lib/repository';
+import { isFixedPriceService, toSalonService } from '../lib/serviceMapper';
 import { useAuth } from './AuthContext';
 
 interface CustomerContact {
@@ -13,14 +14,16 @@ interface CustomerContact {
 interface BookingContextType {
   isOpen: boolean;
   step: number;
+  services: SalonService[];
+  catalogueLoading: boolean;
+  catalogueError: string | null;
   selectedServices: SalonService[];
-  selectedStaffId: string | undefined;
   selectedDate: string;
   selectedSlot: string;
   contact: CustomerContact;
-  lastConfirmedAppointment: Appointment | null;
   error: string | null;
-  isSubmitting: boolean;
+  availabilityLoading: boolean;
+  availabilityError: string | null;
 
   // Computed
   totalPrice: number;
@@ -34,11 +37,9 @@ interface BookingContextType {
   toggleService: (service: SalonService) => void;
   removeService: (serviceId: string) => void;
   clearServices: () => void;
-  setSelectedStaffId: (staffId: string | undefined) => void;
   setSelectedDate: (date: string) => void;
   setSelectedSlot: (slot: string) => void;
   setContact: (updates: Partial<CustomerContact>) => void;
-  submitBooking: () => Promise<Appointment | null>;
   resetBooking: () => void;
 }
 
@@ -48,8 +49,13 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [services, setServices] = useState<SalonService[]>([]);
+  const [catalogueLoading, setCatalogueLoading] = useState(true);
+  const [catalogueError, setCatalogueError] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<SalonService[]>([]);
-  const [selectedStaffId, setSelectedStaffId] = useState<string | undefined>(undefined);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
 
   // Default to tomorrow's date
   const tomorrowStr = useMemo(() => {
@@ -67,9 +73,23 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     notes: '',
   });
 
-  const [lastConfirmedAppointment, setLastConfirmedAppointment] = useState<Appointment | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setCatalogueLoading(true);
+    setCatalogueError(null);
+    void salonRepository.getServices().then((records) => {
+      if (active) setServices(records.map(toSalonService));
+    }).catch((loadError: unknown) => {
+      if (!active) return;
+      setServices([]);
+      setCatalogueError(loadError instanceof Error ? loadError.message : 'Could not load the live service catalogue.');
+    }).finally(() => {
+      if (active) setCatalogueLoading(false);
+    });
+    return () => { active = false; };
+  }, []);
 
   // Sync user info if user logs in
   React.useEffect(() => {
@@ -91,19 +111,51 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return selectedServices.reduce((sum, s) => sum + s.durationMinutes, 0);
   }, [selectedServices]);
 
-  const availableSlots = useMemo(() => {
-    if (!selectedDate || totalDuration === 0) return [];
-    return db.getAvailableSlots(selectedDate, totalDuration, selectedStaffId);
-  }, [selectedDate, totalDuration, selectedStaffId]);
+  const handleDateChange = (date: string) => {
+    setSelectedDate(date);
+    setSelectedSlot('');
+  };
+
+  useEffect(() => {
+    let active = true;
+    const selectedServiceIds = selectedServices.map((service) => service.id).sort();
+    setAvailableSlots([]);
+    setSelectedSlot('');
+    setAvailabilityError(null);
+    if (!selectedDate || selectedServiceIds.length === 0) {
+      setAvailabilityLoading(false);
+      return () => { active = false; };
+    }
+    if (selectedServices.some((service) => !isFixedPriceService(service))) {
+      setAvailabilityLoading(false);
+      setAvailabilityError('Choose only active, fixed-price services with confirmed prices to check availability.');
+      return () => { active = false; };
+    }
+    setAvailabilityLoading(true);
+    void salonRepository.getAvailableSlots({
+      date: selectedDate,
+      serviceIds: selectedServiceIds,
+    }).then((slots) => {
+      if (active) setAvailableSlots(slots.map((slot) => slot.slice(0, 5)));
+    }).catch((loadError: unknown) => {
+      if (!active) return;
+      setAvailableSlots([]);
+      setAvailabilityError(loadError instanceof Error ? loadError.message : 'Could not load live availability.');
+    }).finally(() => {
+      if (active) setAvailabilityLoading(false);
+    });
+    return () => { active = false; };
+  }, [selectedDate, selectedServices]);
 
   const openBooking = (initialService?: SalonService) => {
     if (initialService) {
-      if (!initialService.priceConfirmed || initialService.requiresConfirmation) {
+      const liveService = services.find((service) => service.id === initialService.id);
+      if (!liveService || !isFixedPriceService(liveService)) {
         setSelectedServices([]);
         setStep(1);
-        setError('This service price needs confirmation from the salon before it can be booked.');
+        setError('This service is unavailable for booking. Choose an active service with a confirmed fixed price.');
       } else {
-        setSelectedServices([initialService]);
+        setSelectedServices([liveService]);
         setStep(2); // Jump straight to date & staff selection
         setError(null);
       }
@@ -119,13 +171,14 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const toggleService = (service: SalonService) => {
-    if (!service.priceConfirmed || service.requiresConfirmation) return;
+    const liveService = services.find((item) => item.id === service.id);
+    if (!liveService || !isFixedPriceService(liveService)) return;
     setSelectedServices((prev) => {
       const exists = prev.some((s) => s.id === service.id);
       if (exists) {
         return prev.filter((s) => s.id !== service.id);
       } else {
-        return [...prev, service];
+        return [...prev, liveService];
       }
     });
   };
@@ -142,65 +195,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setContactState((prev) => ({ ...prev, ...updates }));
   };
 
-  const submitBooking = async (): Promise<Appointment | null> => {
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      if (!user) {
-        throw new Error('Please sign in or create a customer account before confirming this appointment.');
-      }
-      if (selectedServices.length === 0) {
-        throw new Error('Please select at least one service.');
-      }
-      if (!selectedDate || !selectedSlot) {
-        throw new Error('Please choose a valid appointment date and available time slot.');
-      }
-      if (!contact.fullName.trim() || !contact.phone.trim()) {
-        throw new Error('Please provide your name and contact phone number.');
-      }
-
-      // Look up staff name if selected
-      const staffMember = selectedStaffId ? db.getStaffById(selectedStaffId) : undefined;
-
-      const result = db.createAppointment({
-        customerId: user.id,
-        customerName: contact.fullName.trim(),
-        customerPhone: contact.phone.trim(),
-        customerEmail: contact.email.trim() || user.email,
-        staffId: selectedStaffId,
-        staffName: staffMember?.name,
-        appointmentDate: selectedDate,
-        startTime: selectedSlot,
-        totalDurationMinutes: totalDuration,
-        totalPrice,
-        status: 'confirmed',
-        services: selectedServices,
-        notes: contact.notes.trim() || undefined,
-      });
-
-      if (!result.success || !result.appointment) {
-        throw new Error(result.error || 'Failed to confirm booking due to slot conflict.');
-      }
-
-      setLastConfirmedAppointment(result.appointment);
-      setStep(5); // Success step
-      return result.appointment;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Booking failed';
-      setError(msg);
-      return null;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const resetBooking = () => {
     setSelectedServices([]);
-    setSelectedStaffId(undefined);
     setSelectedSlot('');
     setError(null);
-    setLastConfirmedAppointment(null);
+    setAvailableSlots([]);
+    setAvailabilityError(null);
     setStep(1);
   };
 
@@ -209,14 +209,16 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{
         isOpen,
         step,
+        services,
+        catalogueLoading,
+        catalogueError,
         selectedServices,
-        selectedStaffId,
         selectedDate,
         selectedSlot,
         contact,
-        lastConfirmedAppointment,
         error,
-        isSubmitting,
+        availabilityLoading,
+        availabilityError,
         totalPrice,
         totalDuration,
         availableSlots,
@@ -226,11 +228,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         toggleService,
         removeService,
         clearServices,
-        setSelectedStaffId,
-        setSelectedDate,
+        setSelectedDate: handleDateChange,
         setSelectedSlot,
         setContact,
-        submitBooking,
         resetBooking,
       }}
     >

@@ -34,11 +34,13 @@ export type ServiceCategory =
 
 export interface SalonService {
   id: string;
+  sourceKey?: string | null;
   name: string;
   category: ServiceCategory;
   gender: GenderClassification;
   description?: string;
   price: number; // in INR (base or exact price)
+  priceType?: 'fixed' | 'range' | 'starting_at';
   minPrice?: number; // for approved price ranges (e.g. ₹3,000)
   maxPrice?: number; // for approved price ranges (e.g. ₹5,000)
   displayPrice?: string; // e.g. "₹3,000–₹5,000" or "₹10,000+"

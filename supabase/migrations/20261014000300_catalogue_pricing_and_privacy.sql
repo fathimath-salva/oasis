@@ -26,7 +26,9 @@ ALTER TABLE public.services
 
 ALTER TABLE public.staff
   ADD COLUMN source_key text,
+  ADD COLUMN is_demo boolean NOT NULL DEFAULT true,
   ADD CONSTRAINT staff_source_key_unique UNIQUE (source_key);
+GRANT SELECT (is_demo) ON public.staff TO anon, authenticated;
 
 ALTER TABLE public.appointment_services
   ADD COLUMN hair_length text,

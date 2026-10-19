@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
 
   return (
     <>
-      <div className="bg-[#343923] text-[#F5F1E8] px-4 sm:px-6 lg:px-8 py-2 text-[11px]">
+      <div className="bg-[#151412] text-[#E9DFCA] px-4 sm:px-6 lg:px-8 py-2 text-[11px] tracking-wide">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
           <span>Providence Plaza, Yelmudi Bridge, Puttur</span>
           <div className="flex items-center gap-4">
@@ -85,12 +85,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
         </div>
       </div>
 
-      <header ref={servicesMenuRef} className="sticky top-0 z-50 border-b border-[#53583A]/15 bg-[#F5F1E8]/95 backdrop-blur">
+      <header ref={servicesMenuRef} className="sticky top-0 z-50 border-b border-[#C6AA76]/30 bg-[#F7F3EB]/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="min-h-[72px] flex items-center justify-between gap-3">
             <button onClick={() => navigate('home')} className="min-w-0 shrink-0 text-left leading-none" aria-label="THE OASIS UNISEX SALON & SPA home">
-              <span className="block whitespace-nowrap font-serif text-[21px] sm:text-2xl tracking-[0.12em] text-[#343923]">THE OASIS</span>
-              <span className="mt-1 block whitespace-nowrap text-[8px] sm:text-[9px] tracking-[0.16em] text-[#53583A]">UNISEX SALON & SPA | PUTTUR</span>
+              <img src="/images/oasis-logo.jpg" alt="THE OASIS — UNISEX SALON & SPA" width="1450" height="660" className="h-auto w-[142px] object-contain sm:w-[158px]" />
             </button>
             <nav aria-label="Main navigation" className="hidden lg:flex items-center justify-center gap-1 xl:gap-3 min-w-0">
               <button onClick={() => navigate('home')} className={`px-2 py-2 text-sm whitespace-nowrap ${currentView === 'home' ? 'text-[#343923] font-semibold' : 'text-[#53583A] hover:text-[#343923]'}`}>Home</button>
@@ -114,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
                     <button onClick={() => { setDesktopAccountOpen(false); onOpenAuth('login'); }} className="block w-full px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign In</button>
                     <button onClick={() => { setDesktopAccountOpen(false); onOpenAuth('register'); }} className="block w-full px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Create Account</button>
                   </>}
-                  {user && role === 'customer' && <>
+                  {user && isRoleVerified && role === 'customer' && <>
                     <button onClick={() => navigate('my-appointments')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>
                     <button onClick={() => navigate('my-account')} className="block w-full whitespace-nowrap px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Account</button>
                   </>}
@@ -127,8 +126,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
             </div>
 
             <div className="flex shrink-0 items-center gap-2 lg:hidden">
-              <button onClick={() => openBooking()} aria-label="Book Appointment" className="whitespace-nowrap bg-[#53583A] px-3 py-2 text-xs sm:text-sm text-white hover:bg-[#343923]">Book</button>
-              <button onClick={() => setMobileMenuOpen((open) => !open)} aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileMenuOpen} className="p-2 text-[#343923] hover:bg-[#DDE4D7]">
+              <button onClick={() => openBooking()} aria-label="Book Appointment" className="min-h-11 whitespace-nowrap bg-[#53583A] px-3 py-2 text-xs text-white hover:bg-[#343923] sm:text-sm">Book</button>
+              <button onClick={() => setMobileMenuOpen((open) => !open)} aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileMenuOpen} className="min-h-11 min-w-11 p-2 text-[#343923] hover:bg-[#DDE4D7]">
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
@@ -137,30 +136,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenA
 
         {mobileMenuOpen && <div className="border-t border-[#53583A]/15 bg-[#F5F1E8] px-4 py-4 lg:hidden">
           <nav aria-label="Mobile navigation" className="mx-auto grid max-w-7xl grid-cols-2 gap-1">
-            <button onClick={() => navigate('home')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Home</button>
+            <button onClick={() => navigate('home')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Home</button>
             <div className="relative">
-              <button type="button" aria-expanded={mobileServicesOpen} aria-controls="mobile-services-menu" onClick={() => setMobileServicesOpen((open) => !open)} className="flex w-full items-center justify-between px-3 py-2 text-sm text-[#343923] hover:bg-[#DDE4D7]">Services <ChevronDown className="h-3.5 w-3.5" /></button>
+              <button type="button" aria-expanded={mobileServicesOpen} aria-controls="mobile-services-menu" onClick={() => setMobileServicesOpen((open) => !open)} className="flex min-h-11 w-full items-center justify-between px-3 py-2 text-sm text-[#343923] hover:bg-[#DDE4D7]">Services <ChevronDown className="h-3.5 w-3.5" /></button>
               {mobileServicesOpen && <div id="mobile-services-menu" className="col-span-2 pl-3" role="menu">
-                {serviceLinks.map((item) => <button role="menuitem" key={item.filter} onClick={() => navigate("services", item.filter)} className="block w-full px-3 py-2 text-left text-sm text-[#53583A] hover:bg-[#DDE4D7]">{item.label}</button>)}
+                {serviceLinks.map((item) => <button role="menuitem" key={item.filter} onClick={() => navigate("services", item.filter)} className="block min-h-11 w-full px-3 py-2 text-left text-sm text-[#53583A] hover:bg-[#DDE4D7]">{item.label}</button>)}
               </div>}
             </div>
-            <button onClick={() => navigate('about')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Our Story</button>
-            <button onClick={() => navigate('contact')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Contact</button>
+            <button onClick={() => navigate('about')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Our Story</button>
+            <button onClick={() => navigate('contact')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Contact</button>
           </nav>
           <div ref={mobileAccountRef} className="mx-auto mt-3 max-w-7xl border-t border-[#53583A]/15 pt-3">
-            <button type="button" aria-expanded={mobileAccountOpen} onClick={() => setMobileAccountOpen((open) => !open)} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#343923]"><UserRound className="h-4 w-4" />Account <ChevronDown className="h-3.5 w-3.5" /></button>
+            <button type="button" aria-expanded={mobileAccountOpen} onClick={() => setMobileAccountOpen((open) => !open)} className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-sm text-[#343923]"><UserRound className="h-4 w-4" />Account <ChevronDown className="h-3.5 w-3.5" /></button>
             {mobileAccountOpen && <div className="grid grid-cols-2 gap-1 px-3 pb-2">
               {!user && <>
-                <button onClick={() => { setMobileAccountOpen(false); onOpenAuth('login'); setMobileMenuOpen(false); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign In</button>
-                <button onClick={() => { setMobileAccountOpen(false); onOpenAuth('register'); setMobileMenuOpen(false); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Create Account</button>
+                <button onClick={() => { setMobileAccountOpen(false); onOpenAuth('login'); setMobileMenuOpen(false); }} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign In</button>
+                <button onClick={() => { setMobileAccountOpen(false); onOpenAuth('register'); setMobileMenuOpen(false); }} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Create Account</button>
               </>}
-              {user && role === 'customer' && <>
-                <button onClick={() => navigate('my-appointments')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>
-                <button onClick={() => navigate('my-account')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Account</button>
+              {user && isRoleVerified && role === 'customer' && <>
+                    <button onClick={() => navigate('my-appointments')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Bookings</button>
+                    <button onClick={() => navigate('my-account')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">My Account</button>
               </>}
-              {user && isRoleVerified && role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Dashboard</button>}
-              {user && isRoleVerified && role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Dashboard</button>}
-              {user && <button onClick={() => { void logout().then((result) => { if (!result.error) navigate('home'); }); }} className="px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign Out</button>}
+              {user && isRoleVerified && role === 'staff' && <button onClick={() => navigate('staff-dashboard')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Staff Dashboard</button>}
+              {user && isRoleVerified && role === 'admin' && <button onClick={() => navigate('admin-dashboard')} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Admin Dashboard</button>}
+              {user && <button onClick={() => { void logout().then((result) => { if (!result.error) navigate('home'); }); }} className="min-h-11 px-3 py-2 text-left text-sm text-[#343923] hover:bg-[#DDE4D7]">Sign Out</button>}
             </div>}
           </div>
         </div>}      </header>

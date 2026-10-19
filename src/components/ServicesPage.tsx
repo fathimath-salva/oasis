@@ -4,39 +4,52 @@ import {
   X,
   HelpCircle,
 } from 'lucide-react';
-import { db } from '../lib/db';
 import { useBooking } from '../context/BookingContext';
-import { formatServicePrice } from '../lib/formatters';
+import { getCataloguePriceLabel } from '../lib/formatters';
 import type { SalonService, ServiceCategory } from '../types/salon';
 import { SERVICE_CATEGORIES } from '../constants/salonData';
+import { isFixedPriceService } from '../lib/serviceMapper';
 
-// Stock images are illustrative previews, not photographs of this salon.
 const SERVICE_IMAGES: Record<string, string> = {
-  'Hair Cutting': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85',
-  'Hair Wash': 'https://images.unsplash.com/photo-1560869713-da86a9ec9d13?auto=format&fit=crop&w=1200&q=85',
-  'Blow Dry': 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1200&q=85',
-  'Smoothening / Straightening': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85',
-  'Keratin Treatment': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85',
-  'Classic Facial': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85',
-  'Premium Facial': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85',
-  'Clean-Up': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&q=85',
-  'Bleach & Add-On': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&q=85',
-  'Hair Colour': 'https://images.unsplash.com/photo-1560869713-da86a9ec9d13?auto=format&fit=crop&w=1200&q=85',
-  'Manicure': 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=85',
-  'Pedicure': 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1200&q=85',
-  'Hair Spa': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=85',
-  'Waxing': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&q=85',
-  'Brazilian Waxing': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&q=85',
-  'Threading': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85',
-  'Body Spa & Massage': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=85',
+  'Hair Cutting': '/images/women-beauty.jpg',
+  'Hair Wash': '/images/women-hair-spa.jpg',
+  'Hair Colour': '/images/women-hair-colour.jpg',
+  'Blow Dry': '/images/women-hair-smoothing.jpg',
+  'Smoothening / Straightening': '/images/women-hair-smoothing.jpg',
+  'Keratin Treatment': '/images/women-hair-smoothing.jpg',
+  'Classic Facial': '/images/women-facial.jpg',
+  'Premium Facial': '/images/women-facial.jpg',
+  'Clean-Up': '/images/women-facial.jpg',
+  'Bleach & Add-On': '/images/women-facial.jpg',
+  'Manicure': '/images/women-manicure.jpg',
+  Pedicure: '/images/women-pedicure.jpg',
+  'Hair Spa': '/images/women-hair-spa.jpg',
+  'Waxing': '/images/women-waxing.jpg',
+  'Brazilian Waxing': '/images/women-waxing.jpg',
+  'Threading': '/images/women-threading.jpg',
+  'Body Spa & Massage': '/images/men-massage.jpg',
 };
+
+const MEN_SERVICE_IMAGES: Record<string, string> = {
+  'Hair Cutting': '/images/men-haircut.jpg',
+  'Hair Wash': '/images/men-hair-spa.jpg',
+  'Hair Colour': '/images/men-haircut.jpg',
+  'Hair Spa': '/images/men-hair-spa.jpg',
+  Manicure: '/images/men-manicure.jpg',
+  Pedicure: '/images/men-pedicure.jpg',
+  Waxing: '/images/men-waxing.jpg',
+  Threading: '/images/men-threading.jpg',
+  'Body Spa & Massage': '/images/men-massage.jpg',
+};
+
+const categoryImage = (category: string, gender: string) => (gender === 'men' ? MEN_SERVICE_IMAGES[category] : SERVICE_IMAGES[category]) || null;
 
 interface ServicesPageProps {
   initialFilter?: string; // 'all' | 'men' | 'women' | 'spa' | specific category name
 }
 
 export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all' }) => {
-  const { openBooking } = useBooking();
+  const { openBooking, services: allServices, catalogueLoading, catalogueError } = useBooking();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGender, setSelectedGender] = useState<'all' | 'men' | 'women'>(() => {
     if (initialFilter === 'men') return 'men';
@@ -72,8 +85,6 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
       setSelectedCategory('all');
     }
   }, [initialFilter]);
-
-  const allServices = useMemo(() => db.getServices().filter((s) => s.isActive), []);
 
   // Filter available categories based on active gender
   const availableCategories = useMemo(() => {
@@ -134,19 +145,15 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
   }, [filteredServices, selectedGender]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+    <div className="service-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       {/* Page Header */}
-      <div className="text-center space-y-3 max-w-3xl mx-auto">
-        <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#53583A]">
-          Hair, Beauty & Spa
-        </span>
-        <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#343923]">
-          Services & Prices
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-          Browse hair, beauty and spa services. Price ranges and length options are shown where listed.
-        </p>
-      </div>
+      <section className="service-hero" aria-labelledby="services-heading">
+        <img src={selectedGender === 'men' ? '/images/men-grooming.jpg' : selectedGender === 'women' ? '/images/women-beauty.jpg' : '/images/salon-interior.jpg'} alt={selectedGender === 'men' ? 'Men’s grooming portrait from the OASIS catalogue' : selectedGender === 'women' ? 'Women’s beauty portrait from the OASIS catalogue' : 'The OASIS salon interior'} />
+        <div><span className="eyebrow">Hair · Beauty · Spa</span><h1 id="services-heading">Services & prices</h1><p>Explore the OASIS catalogue and choose the care that feels right for you.</p></div>
+      </section>
+
+      {catalogueLoading && <p className="mx-auto max-w-4xl text-sm text-[#53583A]" role="status">Loading the live service catalogue…</p>}
+      {catalogueError && <p className="mx-auto max-w-4xl rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">{catalogueError}</p>}
 
       {/* Control Bar: Search & Gender Tabs */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#A8B7A0]/40 space-y-4">
@@ -202,7 +209,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               placeholder="Search by name, treatment, or fruit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[#A8B7A0] bg-white focus:outline-none focus:ring-2 focus:ring-[#343923]/20"
+              className="w-full pl-9 pr-4 py-2 text-base sm:text-sm rounded-xl border border-[#A8B7A0] bg-white focus:outline-none focus:ring-2 focus:ring-[#343923]/20"
             />
             {searchQuery && (
               <button
@@ -245,7 +252,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
         <div className="pt-2 border-t border-gray-100 flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-thin">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`min-h-10 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               selectedCategory === 'all'
                 ? 'bg-[#343923] text-white'
                 : 'bg-[#DDE4D7]/70 text-[#343923] hover:bg-[#DDE4D7]'
@@ -262,7 +269,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`min-h-10 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   selectedCategory === cat
                     ? 'bg-[#343923] text-white'
                     : 'bg-[#DDE4D7]/70 text-[#343923] hover:bg-[#DDE4D7]'
@@ -283,12 +290,12 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
             <div className="space-y-8">
               {group.categories.map(({ category, services }) => (
                 <section key={category} aria-label={category}>
-                  <h3 className="border-b border-[#53583A]/20 pb-2 font-serif text-xl text-[#343923]">{category}</h3>
+                  <div className="service-category-heading">{categoryImage(category, group.gender) && <img src={categoryImage(category, group.gender) || undefined} alt={`${category} service photo from the ${group.gender === 'men' ? 'men’s' : 'women’s'} OASIS catalogue`} loading="lazy" />}<h3>{category}</h3></div>
                   <div className="divide-y divide-[#53583A]/10">
                     {services.map((service) => (
                       <button key={service.id} type="button" onClick={() => setDetailService(service)} aria-label={`View details for ${service.name}`} className="flex w-full items-center justify-between gap-4 py-3 text-left hover:bg-[#EEE7DA]/70">
                         <span className="text-sm text-[#343923] sm:text-base">{service.name}{service.hairLength && <span className="ml-2 text-xs text-[#53583A]">({service.hairLength.replace('_', ' ')})</span>}</span>
-                        <span className="shrink-0 text-sm font-medium text-[#343923] sm:text-base">{service.priceConfirmed && !service.requiresConfirmation ? formatServicePrice(service) : 'Price to be confirmed'}</span>
+                        <span className="shrink-0 text-sm font-medium text-[#343923] sm:text-base">{getCataloguePriceLabel(service)}</span>
                       </button>
                     ))}
                   </div>
@@ -321,10 +328,9 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
 
       {/* SERVICE DETAILS MODAL */}
       {detailService && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-xl bg-[#F5F1E8] shadow-2xl overflow-hidden border border-[#A8B7A0]">
-            <img src={detailService.imageUrl || SERVICE_IMAGES[detailService.category]} alt={`Illustrative ${detailService.category.toLowerCase()} treatment`} className="h-56 sm:h-64 w-full object-cover" />
-            <p className="absolute top-3 left-3 bg-[#343923]/85 text-white text-[10px] px-3 py-1">Illustrative image</p>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+          <div className="relative my-0 sm:my-4 max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto bg-[#F5F1E8] shadow-2xl border border-[#A8B7A0]">
+            <img src={detailService.imageUrl || categoryImage(detailService.category, detailService.gender) || '/images/salon-interior.jpg'} alt={`${detailService.category} at THE OASIS`} className="h-56 sm:h-64 w-full object-cover" />
             <div className="p-6 space-y-4">
             <div className="flex justify-between items-start border-b border-gray-100 pb-3">
               <div>
@@ -337,7 +343,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               </div>
               <button
                 onClick={() => setDetailService(null)}
-                className="text-gray-400 hover:text-gray-600 p-1"
+                className="min-h-11 min-w-11 text-gray-400 hover:text-gray-600 p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -367,7 +373,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
               <div className="text-right">
                 <span className="text-gray-500 block text-[11px]">Official Price</span>
                 <span className="font-bold text-lg text-[#343923]">
-                  {detailService.priceConfirmed && !detailService.requiresConfirmation ? formatServicePrice(detailService) : 'Price to be confirmed'}
+                  {getCataloguePriceLabel(detailService)}
                 </span>
               </div>
             </div>
@@ -385,10 +391,10 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ initialFilter = 'all
                   setDetailService(null);
                   openBooking(s);
                 }}
-                disabled={!detailService.priceConfirmed || detailService.requiresConfirmation}
+                disabled={!isFixedPriceService(detailService)}
                 className="px-6 py-2 bg-[#343923] text-white rounded-xl text-xs font-semibold hover:bg-[#19231C] disabled:opacity-50"
               >
-                Book This Service
+                {isFixedPriceService(detailService) ? 'Book This Service' : 'Price confirmation required'}
               </button>
             </div>
             </div>

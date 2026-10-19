@@ -14,7 +14,7 @@ export const TermsPolicyPage: React.FC = () => {
           Privacy Policy & Booking Terms
         </h1>
         <p className="text-xs text-gray-500">
-          Last updated: October 2026 â€¢ THE OASIS UNISEX SALON & SPA, Puttur
+          Last updated: October 2026 • THE OASIS UNISEX SALON & SPA, Puttur
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export const TermsPolicyPage: React.FC = () => {
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-gray-600">
             <li>
-              <strong>Punctuality:</strong> We kindly request guests to arrive 5â€“10 minutes prior
+              <strong>Punctuality:</strong> We kindly request guests to arrive 5–10 minutes prior
               to their scheduled time.
             </li>
             <li>

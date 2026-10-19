@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
+import { createTimeoutFetch } from './authRequests';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
@@ -46,7 +47,11 @@ export const isSupabaseConfigured = supabaseConfigurationError === null;
 // public site can still build and run. No fake client or credentials are used.
 export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
   ? createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      // Supabase JS currently defaults to implicit. Keep it explicit: recovery
+      // links must work across devices, while PKCE verifiers are browser-local.
+      // The SDK consumes the implicit URL callback and emits PASSWORD_RECOVERY.
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
+      global: { fetch: createTimeoutFetch(fetch) },
     })
   : null;
 

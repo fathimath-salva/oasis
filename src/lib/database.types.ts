@@ -23,7 +23,7 @@ export type Database = {
       }>;
       staff: TableShape<{
         id: string; profile_id: string | null; name: string; title: string; specialties: string[];
-        is_active: boolean; rating: number; avatar_url: string | null; working_days: number[];
+        is_active: boolean; is_demo: boolean; rating: number; avatar_url: string | null; working_days: number[];
         start_time: string; end_time: string; created_at: string; updated_at: string; source_key: string | null;
       }>;
       staff_private: TableShape<{ staff_id: string; phone: string; email: string }>;
@@ -63,7 +63,7 @@ export type Database = {
       is_assigned_staff: { Args: { p_staff_id: string }; Returns: boolean };
       admin_set_profile_role: { Args: { p_user_id: string; p_role: Database['public']['Enums']['user_role'] }; Returns: undefined };
       get_available_slots: {
-        Args: { p_date: string; p_duration_minutes: number; p_staff_id?: string | null; p_service_ids?: string[] | null };
+        Args: { p_date: string; p_service_ids: string[] };
         Returns: { available_time: string }[];
       };
       create_booking: {

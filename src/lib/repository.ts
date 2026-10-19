@@ -4,7 +4,7 @@ import type { Database, Json } from './database.types';
 type Rows = Database['public']['Tables'];
 type ProfileRow = Pick<Rows['profiles']['Row'], 'id' | 'full_name' | 'email' | 'phone' | 'role' | 'created_at' | 'updated_at'>;
 type ServiceRow = Rows['services']['Row'];
-type StaffRow = Pick<Rows['staff']['Row'], 'id' | 'name' | 'title' | 'specialties' | 'is_active' | 'rating' | 'avatar_url' | 'working_days' | 'start_time' | 'end_time'>;
+type StaffRow = Pick<Rows['staff']['Row'], 'id' | 'name' | 'title' | 'specialties' | 'is_active' | 'is_demo' | 'rating' | 'avatar_url' | 'working_days' | 'start_time' | 'end_time'>;
 type HoursRow = Rows['salon_business_hours']['Row'];
 type HolidayRow = Rows['salon_holidays']['Row'];
 type AppointmentRow = Rows['appointments']['Row'];
@@ -60,12 +60,18 @@ export interface ServiceRecord {
   updatedAt: string;
 }
 
+export interface AvailableSlotRequest {
+  date: string;
+  serviceIds: string[];
+}
+
 export interface PublicStaffRecord {
   id: string;
   name: string;
   title: string;
   specialties: string[];
   isActive: boolean;
+  isDemo: boolean;
   rating: number;
   avatarUrl: string | null;
   workingDays: number[];
@@ -173,6 +179,7 @@ const mapStaff = (row: StaffRow): PublicStaffRecord => ({
   title: row.title,
   specialties: [...row.specialties],
   isActive: row.is_active,
+  isDemo: row.is_demo,
   rating: row.rating,
   avatarUrl: row.avatar_url,
   workingDays: [...row.working_days],
@@ -258,11 +265,26 @@ export const salonRepository = {
     return (data ?? []).map(mapService);
   },
 
+  // Read-only availability lookup. The SQL function returns `available_time`
+  // rows and requires database service UUIDs to apply staff qualification links.
+  async getAvailableSlots({ date, serviceIds }: AvailableSlotRequest): Promise<string[]> {
+    if (!date || serviceIds.length === 0) {
+      return [];
+    }
+    const { data, error } = await getSupabaseClient().rpc('get_available_slots', {
+      p_date: date,
+      p_service_ids: serviceIds,
+    });
+    throwOnError(error);
+    return (data ?? []).map((row) => row.available_time);
+  },
+
   async getPublicStaff(): Promise<PublicStaffRecord[]> {
     const { data, error } = await getSupabaseClient()
       .from('staff')
-      .select('id, name, title, specialties, is_active, rating, avatar_url, working_days, start_time, end_time')
+      .select('id, name, title, specialties, is_active, is_demo, rating, avatar_url, working_days, start_time, end_time')
       .eq('is_active', true)
+      .eq('is_demo', false)
       .order('name');
     throwOnError(error);
     return (data ?? []).map(mapStaff);

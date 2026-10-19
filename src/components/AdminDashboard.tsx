@@ -320,7 +320,7 @@ export const AdminDashboard: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setCurrentTab(tab.id as AdminTab)}
-              className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`min-h-11 flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 currentTab === tab.id
                   ? 'bg-[#26352A] text-white shadow-xs'
                   : 'text-gray-600 hover:bg-[#E3E9DF]/50'
@@ -786,8 +786,8 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#D8C9A7]/40 shadow-xs overflow-hidden">
-            <table className="w-full text-left text-xs">
+          <div className="bg-white rounded-2xl border border-[#D8C9A7]/40 shadow-xs overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-xs">
               <thead className="bg-[#F5F1E8] border-b border-[#D8C9A7]/40 text-[#26352A] uppercase text-[10px] font-bold">
                 <tr>
                   <th className="p-3.5">Customer Name</th>
@@ -852,13 +852,13 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#D8C9A7]/40 shadow-xs overflow-hidden">
+          <div className="bg-white rounded-2xl border border-[#D8C9A7]/40 shadow-xs overflow-x-auto">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-serif text-base font-bold text-[#26352A]">
                 Recorded Payment Transactions
               </h3>
             </div>
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[720px] text-left text-xs">
               <thead className="bg-[#F5F1E8] border-b border-[#D8C9A7]/40 text-[#26352A] uppercase text-[10px] font-bold">
                 <tr>
                   <th className="p-3.5">Ref ID</th>
@@ -997,8 +997,8 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#D8C9A7]/40 shadow-xs overflow-hidden">
-            <table className="w-full text-left text-xs">
+          <div className="bg-white rounded-2xl border border-[#D8C9A7]/40 shadow-xs overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-xs">
               <thead className="bg-[#F5F1E8] border-b border-[#D8C9A7]/40 text-[#26352A] uppercase text-[10px] font-bold">
                 <tr>
                   <th className="p-3.5">Timestamp</th>
@@ -1098,8 +1098,8 @@ export const AdminDashboard: React.FC = () => {
 
       {/* SERVICE EDIT / CREATE MODAL */}
       {serviceModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#D8C9A7] space-y-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+          <div className="my-0 sm:my-4 max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto bg-white rounded-2xl p-5 sm:p-6 shadow-2xl border border-[#D8C9A7] space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <h3 className="font-serif text-lg font-bold text-[#26352A]">
                 {editingService ? `Edit: ${editingService.name}` : 'Add New Salon Service'}
@@ -1239,8 +1239,8 @@ export const AdminDashboard: React.FC = () => {
 
       {/* RECORD PAYMENT MODAL */}
       {paymentModalOpen && selectedAptForPayment && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D8C9A7] space-y-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4">
+          <div className="my-0 sm:my-4 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto bg-white rounded-2xl p-5 sm:p-6 shadow-2xl border border-[#D8C9A7] space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <h3 className="font-serif text-base font-bold text-[#26352A]">
                 Record Salon Payment: {selectedAptForPayment.bookingReference}

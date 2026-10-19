@@ -354,34 +354,42 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION public.get_available_slots(p_date date, p_duration_minutes integer, p_staff_id uuid DEFAULT NULL,
-                                            p_service_ids uuid[] DEFAULT NULL)
+CREATE FUNCTION public.get_available_slots(p_date date, p_service_ids uuid[])
 RETURNS TABLE(available_time time) LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
 DECLARE
   v_hours public.salon_business_hours%ROWTYPE;
   v_slot time;
   v_end time;
+  v_service_count integer;
+  v_duration integer;
 BEGIN
-  IF p_duration_minutes < 1 OR p_duration_minutes > 600 OR p_date IS NULL THEN
-    RAISE EXCEPTION 'Invalid date or duration';
-  END IF;
+  IF p_date IS NULL OR p_service_ids IS NULL OR cardinality(p_service_ids) = 0
+     OR cardinality(p_service_ids) <> (
+       SELECT count(DISTINCT requested.service_id)
+       FROM unnest(p_service_ids) AS requested(service_id)
+     ) THEN RETURN; END IF;
+  SELECT count(*), COALESCE(sum(s.duration_minutes), 0)
+    INTO v_service_count, v_duration
+    FROM public.services s
+   WHERE s.id = ANY(p_service_ids) AND s.is_active AND s.price_confirmed
+     AND NOT s.requires_confirmation;
+  IF v_service_count <> cardinality(p_service_ids) OR v_duration < 1 OR v_duration > 600 THEN RETURN; END IF;
   IF p_date < (now() AT TIME ZONE 'Asia/Kolkata')::date
      OR EXISTS (SELECT 1 FROM public.salon_holidays h WHERE h.holiday_date = p_date) THEN RETURN; END IF;
   SELECT * INTO v_hours FROM public.salon_business_hours h
    WHERE h.day_of_week = EXTRACT(DOW FROM p_date)::integer AND h.is_open;
   IF NOT FOUND THEN RETURN; END IF;
   v_slot := v_hours.open_time;
-  WHILE v_slot + make_interval(mins => p_duration_minutes) <= v_hours.close_time LOOP
-    v_end := v_slot + make_interval(mins => p_duration_minutes);
+  WHILE v_slot + make_interval(mins => v_duration) <= v_hours.close_time LOOP
+    v_end := v_slot + make_interval(mins => v_duration);
     IF (p_date + v_slot) > ((now() AT TIME ZONE 'Asia/Kolkata') + interval '15 minutes')
        AND EXISTS (
          SELECT 1 FROM public.staff s WHERE s.is_active
-            AND (p_staff_id IS NULL OR s.id = p_staff_id)
-            AND (p_service_ids IS NULL OR NOT EXISTS (
+            AND NOT EXISTS (
               SELECT 1 FROM unnest(p_service_ids) AS requested(service_id)
               WHERE NOT EXISTS (SELECT 1 FROM public.staff_services ss
                                 WHERE ss.staff_id = s.id AND ss.service_id = requested.service_id)
-            ))
+            )
            AND EXTRACT(DOW FROM p_date)::integer = ANY(s.working_days)
            AND v_slot >= s.start_time AND v_end <= s.end_time
            AND NOT EXISTS (
@@ -649,7 +657,7 @@ REVOKE ALL ON FUNCTION public.prevent_profile_role_escalation() FROM PUBLIC, ano
 REVOKE ALL ON FUNCTION public.audit_row_change() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.validate_booking_slot(date, time, integer, uuid, uuid[], uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.admin_set_profile_role(uuid, public.user_role) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.get_available_slots(date, integer, uuid, uuid[]) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.get_available_slots(date, uuid[]) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.create_booking(uuid[], date, time, uuid, text, text, text, text) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.cancel_customer_booking(uuid, text) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.reschedule_customer_booking(uuid, date, time) FROM PUBLIC, anon;
@@ -659,7 +667,7 @@ GRANT EXECUTE ON FUNCTION public.current_user_role(), public.is_admin() TO authe
 GRANT EXECUTE ON FUNCTION public.is_admin() TO anon;
 GRANT EXECUTE ON FUNCTION public.is_staff(), public.is_assigned_staff(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_set_profile_role(uuid, public.user_role) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_available_slots(date, integer, uuid, uuid[]) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_available_slots(date, uuid[]) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.create_booking(uuid[], date, time, uuid, text, text, text, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.cancel_customer_booking(uuid, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.reschedule_customer_booking(uuid, date, time) TO authenticated;

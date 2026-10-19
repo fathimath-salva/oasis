@@ -59,8 +59,8 @@ export const StaffDashboard: React.FC = () => {
             alt={currentStaff?.name}
             className="w-16 h-16 rounded-full object-cover border-2 border-[#D8C9A7]"
           />
-          <div>
-            <div className="flex items-center space-x-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="bg-[#D8C9A7] text-[#26352A] text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded">
                 Staff Portal
               </span>
@@ -72,12 +72,12 @@ export const StaffDashboard: React.FC = () => {
         </div>
 
         {/* Staff Switcher for demo */}
-        <div className="flex items-center space-x-3 bg-[#19231C] p-2.5 rounded-2xl border border-[#344839]">
-          <span className="text-[11px] text-gray-400 font-medium pl-1">Switch Staff:</span>
+        <div className="flex flex-wrap items-center gap-2 bg-[#19231C] p-2.5 rounded-2xl border border-[#344839]">
+          <span className="pl-1 text-[11px] text-gray-400 font-medium">Switch Staff:</span>
           <select
             value={selectedStaffId}
             onChange={(e) => setSelectedStaffId(e.target.value)}
-            className="bg-[#26352A] text-white text-xs rounded-xl px-3 py-1.5 border border-[#D8C9A7]/40 focus:outline-none"
+            className="min-w-0 max-w-full flex-1 bg-[#26352A] text-white text-base sm:text-sm rounded-xl px-3 py-1.5 border border-[#D8C9A7]/40 focus:outline-none sm:flex-none"
           >
             {staffList.map((stf) => (
               <option key={stf.id} value={stf.id}>
@@ -135,10 +135,10 @@ export const StaffDashboard: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center space-x-2 border-b border-[#D8C9A7]/40 pb-3">
+      <div role="group" aria-label="Staff dashboard sections" className="flex items-center gap-2 overflow-x-auto border-b border-[#D8C9A7]/40 pb-3">
         <button
           onClick={() => setActiveTab('today')}
-          className={`px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`min-h-11 shrink-0 whitespace-nowrap px-4 sm:px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'today'
               ? 'bg-[#26352A] text-white shadow-xs'
               : 'text-gray-600 hover:bg-[#E3E9DF]'
@@ -148,7 +148,7 @@ export const StaffDashboard: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('upcoming')}
-          className={`px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`min-h-11 shrink-0 whitespace-nowrap px-4 sm:px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'upcoming'
               ? 'bg-[#26352A] text-white shadow-xs'
               : 'text-gray-600 hover:bg-[#E3E9DF]'
@@ -158,7 +158,7 @@ export const StaffDashboard: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('schedule')}
-          className={`px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`min-h-11 shrink-0 whitespace-nowrap px-4 sm:px-5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === 'schedule'
               ? 'bg-[#26352A] text-white shadow-xs'
               : 'text-gray-600 hover:bg-[#E3E9DF]'
